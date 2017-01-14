@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Little Brothers</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel='stylesheet' href='/stylesheets/style.css'>
+    <link rel='stylesheet' href='/stylesheets/form.css'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+
+    <% include partials/navbar_logged_out %>
+
+    <div class="puddle-container">
+
+      <div class="left">
+        <h1>Login</h1>
+        <p class="warning"><%= message %></p>
+
+        <form class="form-group puddle-form" action="/login" method="post">
+          <table>
+            <tr>
+              <td><label>Username</label></td>
+              <td><input type="text" class="form-control" name="username" placeholder="Username"></td>
+            </tr>
+            <tr>
+              <td><label>Password</label></td>
+              <td><input type="password" class="form-control" name="password" placeholder="Password"></td>
+            </tr>
+          </table>
+          <button type="submit">Login</button>
+        </form>
+      </div>
+
+    </div>
+  </body>
+</html>

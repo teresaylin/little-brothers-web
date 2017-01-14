@@ -1,0 +1,78 @@
+body {
+  padding-top: 100px;
+  font: 24px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+.navbar-brand,
+.navbar-nav li a {
+  line-height: 70px;
+  height: 70px;
+  padding-top: 0;
+}
+
+.navbar-brand {
+  font-size: 36px;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.left {
+  float: left;
+  width: 50%;
+}
+
+.penguin-gif {
+  float: right;
+  width: 60%;
+}
+
+.igloo-pic {
+  float: right;
+  width: 90%;
+}
+
+.right {
+  float: right;
+  width: 50%;
+}
+
+h1 {
+  font-size: 64px;
+}
+
+.warning {
+  color: #ff3333;
+}
+
+.puddle-container {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  margin-left: 50px;
+  margin-right: 50px;
+}
+
+#tasks {
+  width: 300px;
+  height: 500px;
+}
+
+#inline_content {
+  width: 350px;
+  height: 150px;
+  padding: 10px;
+  background: #fff;
+}
+
+#inline_tasklist {
+  width: 350px;
+  height: 150px;
+  padding: 10px;
+  background: #fff;
+}
+
+[contenteditable=true]:empty:before{
+  content: attr(placeholder);
+  display: block;  
+}
