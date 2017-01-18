@@ -14,6 +14,8 @@ var user = require('./routes/user');
 
 var app = express();
 
+var secrets = require('dotenv').config();
+
 // database setup
 mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/test');
 var db = mongoose.connection;
@@ -21,6 +23,7 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
   console.log('database connected');
 });
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
