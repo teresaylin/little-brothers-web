@@ -65,11 +65,33 @@ router.get('/logout', function(req, res, next) {
 });
 
 /* Incorporating civi API through node package civicrm */
-crmAPI.get('contact', {contact_type:'Individual', return:'display_name, street_address'},
+
+// TEST: Getting first 25 contacts: name and email
+// crmAPI.get('contact', {contact_type:'Individual', return:'display_name, street_address'},
+//   function (result) {
+//     for (var i in result.values) {
+//       val = result.values[i];
+//       console.log(val.id + ": " + val.display_name + " " + val.street_address);
+//     }
+//   }
+// );
+
+// GET new emergency requests: Name, Location, Phone Number, Details
+crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Scheduled', options:{limit:3}, return:'custom_102,location,phone_number,details'},
   function (result) {
     for (var i in result.values) {
       val = result.values[i];
-      console.log(val.id + ": " + val.display_name + " " + val.street_address);
+      console.log(val.id + ": " + val.custom_102 + " " + val.location + " " + val.phone_number + " " + val.details);
+    }
+  }
+);
+
+// GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
+crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
+  function (result) {
+    for (var i in result.values) {
+      val = result.values[i];
+      console.log(val.id + ": " + val.display_name + " " + val.phone);
     }
   }
 );
