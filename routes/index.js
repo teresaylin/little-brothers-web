@@ -122,22 +122,26 @@ router.get('/logout', function(req, res, next) {
 
 
 //SENDS TEXT IF THERE ARE AVAILABLE FOOD DELIVERY REQUESTS
-crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details'},
+crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details'}, //custom_102 is the name of the elder who needs groceries
   function (result) {
-    for (var i in result.values) {
-      val = result.values[i];
-      console.log(val.id + ": " + val.custom_102 + " " + val.details);
-    }
-    if (result.values.length > 0)
+    if (typeof result.values != 'undefined') //if there exists available emergency food requests
     {
-      var message = "New Emergency Food Request: " + val.custom_102 + /*" at " + put the address here + " "*/ + " urgently requires groceries. ";
-      if (val.details != "Undefined")
+      for (var i in result.values)
       {
-        message = message + "Additional details: " + val.details + " ";
+        val = result.values[i];
+        var message = "New Emergency Food Request: " + val.custom_102 + " urgently requires groceries. "; //include address later
+        if (typeof val.details != "undefined")
+        {
+          message = message + "Additional details: " + val.details.substring(3, val.details.length - 6) + " "; //substring of val.details cuts out the paragraph html tag (<p> and </p>)
+        }
+        message = message + "Reply \"ACCEPT\" to accept this request."
+        console.log(message);
+        sendText(message);
       }
-      message = message + "Reply \"ACCEPT\" to accept this request."
-      console.log(message);
-      sendText(message);
+    }
+    else
+    {
+      console.log("No available emergency food requests at this time.");
     }
   }
 );
@@ -145,20 +149,20 @@ crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Av
 // tag ID of 'Emergency Food Package Volunteer' is 190
 // GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
 // should return Teresa, Kristy, Stuti, Shana
-crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
+/**crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
   function (result) {
     for (var i in result.values) {
       val = result.values[i];
       console.log(val.id + ": " + val.display_name + " " + val.phone);
     }
   }
-);
+);**/
 
 
 // GET Admins tagged with 'admin'
 // tag ID of 'admin' is 191
 // should return Teresa, Kristy, Stuti, Shana, Cynthia
-crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
+/**crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
   function (result) {    
     for (var i in result.values) {
       val = result.values[i];
@@ -169,7 +173,7 @@ crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone
       });
     }
   }
-);
+);**/
 
 
 module.exports = router;
