@@ -86,20 +86,38 @@ router.get('/logout', function(req, res, next) {
   res.redirect('/');
 });
 
-/* Incorporating civi API through node package civicrm */
+/* Querying civiCRM */
+// custom_102 is the field for the name of the elder
+// setInterval takes in a function and a delay
+// delay is in milliseconds (1 sec = 1000 ms)
 
-// GET new emergency requests: Name, Location, Phone Number, Details
-crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Scheduled', options:{limit:3}, return:'custom_102,location,phone_number,details'},
-  function (result) {
-    for (var i in result.values) {
-      val = result.values[i];
-      console.log(val.id + ": " + val.custom_102 + " " + val.location + " " + val.phone_number + " " + val.details);
+// Checks for new emergency requests every hour; if there are new requests, send text
+var timer_requests = setInterval(newRequests, 1000*60);
+
+function newRequests() {
+  crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,location,phone_number,details'},
+    function (result) {
+      // if there exists available emergency food requests
+      if (typeof result.values != 'undefined') {
+        for (var i in result.values) {
+          val = result.values[i];
+          var message = "New Emergency Food Request: " + val.custom_102 + " urgently requires groceries. "; //include address later
+          if (typeof val.details != "undefined") {
+            message = message + "Additional details: " + val.details.substring(3, val.details.length - 6) + " "; //substring of val.details cuts out the paragraph html tag (<p> and </p>)
+          }
+          message = message + "Reply \"ACCEPT\" to accept this request.";
+          console.log(message);
+          sendText(message);
+        }
+      } else {
+        console.log("No available emergency food requests at this time.");
+      }
     }
-  }
-);
+  );
+}
 
 
-// TESTING FOR UPDATING CONTACT INFORMATION OF 'JANE DOE' in CIVICRM DATABASE
+/* TESTING FOR UPDATING CONTACT INFORMATION OF 'JANE DOE' in CIVICRM DATABASE */
 // crmAPI.create('contact', {id:'12966', return:'display_name,gender_id'},
 //   function (result) {
 //     val=result.values[0]; 
@@ -117,64 +135,49 @@ crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Sc
 //   }
 // );
 
+/* GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
+Checks every 24 hours
+tag ID of 'Emergency Food Package Volunteer' is 190
+should return Teresa, Kristy, Stuti, Shana */
 
-// SENDS TEXT IF THERE ARE AVAILABLE FOOD DELIVERY REQUESTS
-crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details'}, //custom_102 is the name of the elder who needs groceries
-  function (result) {
-    if (typeof result.values != 'undefined') //if there exists available emergency food requests
-    {
-      for (var i in result.values)
-      {
+var timer_volunteers = setInterval(newVolunteers, 1000*60*24);
+
+function newVolunteers() {
+  crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
+    function (result) {
+      for (var i in result.values) {
         val = result.values[i];
-        var message = "New Emergency Food Request: " + val.custom_102 + " urgently requires groceries. "; //include address later
-        if (typeof val.details != "undefined")
-        {
-          message = message + "Additional details: " + val.details.substring(3, val.details.length - 6) + " "; //substring of val.details cuts out the paragraph html tag (<p> and </p>)
-        }
-        message = message + "Reply \"ACCEPT\" to accept this request."
-        console.log(message);
-        sendText(message);
+        console.log(val.id + ": " + val.display_name + " " + val.phone);
+
+        Volunteer.addVolunteer(val.display_name, val.phone, function(data) {
+          console.log(data.message);
+        });
       }
     }
-    else
-    {
-      console.log("No available emergency food requests at this time.");
+  );
+}
+
+
+/* GET Admins tagged with 'admin'
+Checks every 5 days
+tag ID of 'admin' is 191
+should return Teresa, Kristy, Stuti, Shana, Cynthia */
+
+var timer_admins = setInterval(newAdmins, 1000*60*24*5);
+
+function newAdmins() {
+  crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
+    function (result) {
+      for (var i in result.values) {
+        val = result.values[i];
+        console.log(val.id + ": " + val.display_name + " " + val.phone);
+
+        Admin.addAdmin(val.display_name, val.phone, function(data) {
+          console.log(data.message);
+        });
+      }
     }
-  }
-);
-
-// tag ID of 'Emergency Food Package Volunteer' is 190
-// GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
-// should return Teresa, Kristy, Stuti, Shana
-crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
-  function (result) {
-    for (var i in result.values) {
-      val = result.values[i];
-      console.log(val.id + ": " + val.display_name + " " + val.phone);
-
-      Volunteer.addVolunteer(val.display_name, val.phone, function(data) {
-        console.log(data.message);
-      });
-    }
-  }
-);
-
-
-// GET Admins tagged with 'admin'
-// tag ID of 'admin' is 191
-// should return Teresa, Kristy, Stuti, Shana, Cynthia
-crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
-  function (result) {    
-    for (var i in result.values) {
-      val = result.values[i];
-      console.log(val.id + ": " + val.display_name + " " + val.phone);
-
-      Admin.addAdmin(val.display_name, val.phone, function(data) {
-        console.log(data.message);
-      });
-    }
-  }
-);
-
+  );
+}
 
 module.exports = router;
