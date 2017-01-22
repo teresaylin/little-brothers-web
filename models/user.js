@@ -11,18 +11,16 @@ var userSchema = new mongoose.Schema({
 });
 
 /*
- * Registration handler.
+ * Registration handler. Authenticates that a new user is also an admin in CiviCRM.
  * cb expects an object with 2 fields:
  *    success: whether the registration was successful
  *    message: string displayed to the user
  */
 userSchema.statics.register = function(fullname, username, password, password_confirm, cb) {
-  // var Admin = this;
   var User = this;
   Admin.findOne({ 'name': fullname }, function(err, user) {
     if (user && !user.hasAccount) {
       // admin exists and does not have a user account
-
       if (username.length == 0) {
         cb({ success: false, message: 'The username cannot be blank!' });
         return;
@@ -43,7 +41,7 @@ userSchema.statics.register = function(fullname, username, password, password_co
         } else {
           user.hasAccount = true;
           user.save();
-          
+
           bcrypt.hash(password, 10, function(err, hash) {
             var new_user = new User({
               username: username,

@@ -2,15 +2,15 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 var utils = require('./utils');
 
-/*
-Authenticate that new registration matches someone who is an admin in Civi
-*/
 var adminSchema = new mongoose.Schema({
   name: { type: String, required: true, index: { unique: true } },
   phone: { type: String, required: true },
   hasAccount: { type: Boolean, required: true }
 });
 
+/*
+Adds a new admin, if the admin does not already exist
+*/
 adminSchema.statics.addAdmin = function(display_name, phone_num, cb) {
   var Admin = this;
   Admin.findOne({ 'name': display_name }, function(err, user) {

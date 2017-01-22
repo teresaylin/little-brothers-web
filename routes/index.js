@@ -3,10 +3,12 @@ var bcrypt = require('bcrypt');
 var router = express.Router();
 
 var User = require('../models/user');
-var Admin = require('../models/admin')
+var Admin = require('../models/admin');
+var Volunteer = require('../models/volunteer');
 
 var secrets = require('dotenv').config();
 
+// civiCRM API configuration using Node package 'civicrm'
 var config = {
   server: process.env.LB_URL,
   path: '/sites/all/modules/civicrm/extern/rest.php',
@@ -15,9 +17,8 @@ var config = {
 };
 var crmAPI = require('civicrm')(config);
 
-//Twilio
-function sendText(text)
-{
+// Twilio API configuration
+function sendText(text) {
   var accountSid = 'AC426dcc5ed9ebf6f79429928d75d7a8a7';
   var authToken = '4d418f9eed21c3fbc565802c78921e2f';
 
@@ -27,11 +28,10 @@ function sendText(text)
     to: "+12068495866",
     from: "+16172022236",
     body: text,
-  }, function(err, message){
-    if (err)
-    {
-      console.error(err.message);
-    }
+    }, function(err, message) {
+      if (err) {
+        console.error(err.message);
+      }
   })
 }
 
@@ -86,23 +86,20 @@ router.get('/logout', function(req, res, next) {
   res.redirect('/');
 });
 
-//Attempt to incorporate options.limit parameter
-
 /* Incorporating civi API through node package civicrm */
-// <<<<<<< Updated upstream
 
 // GET new emergency requests: Name, Location, Phone Number, Details
-// crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Scheduled', options:{limit:3}, return:'custom_102,location,phone_number,details'},
-//   function (result) {
-//     for (var i in result.values) {
-//       val = result.values[i];
-//       console.log(val.id + ": " + val.custom_102 + " " + val.location + " " + val.phone_number + " " + val.details);
-//     }
-//   }
-// );
+crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Scheduled', options:{limit:3}, return:'custom_102,location,phone_number,details'},
+  function (result) {
+    for (var i in result.values) {
+      val = result.values[i];
+      console.log(val.id + ": " + val.custom_102 + " " + val.location + " " + val.phone_number + " " + val.details);
+    }
+  }
+);
 
 
-//TESTING FOR UPDATING CONTACT INFORMATION OF 'JANE DOE' in CIVICRM DATABASE
+// TESTING FOR UPDATING CONTACT INFORMATION OF 'JANE DOE' in CIVICRM DATABASE
 // crmAPI.create('contact', {id:'12966', return:'display_name,gender_id'},
 //   function (result) {
 //     val=result.values[0]; 
@@ -121,7 +118,7 @@ router.get('/logout', function(req, res, next) {
 // );
 
 
-//SENDS TEXT IF THERE ARE AVAILABLE FOOD DELIVERY REQUESTS
+// SENDS TEXT IF THERE ARE AVAILABLE FOOD DELIVERY REQUESTS
 crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details'}, //custom_102 is the name of the elder who needs groceries
   function (result) {
     if (typeof result.values != 'undefined') //if there exists available emergency food requests
@@ -149,31 +146,35 @@ crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Av
 // tag ID of 'Emergency Food Package Volunteer' is 190
 // GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
 // should return Teresa, Kristy, Stuti, Shana
-/**crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
+crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
   function (result) {
     for (var i in result.values) {
       val = result.values[i];
       console.log(val.id + ": " + val.display_name + " " + val.phone);
+
+      Volunteer.addVolunteer(val.display_name, val.phone, function(data) {
+        console.log(data.message);
+      });
     }
   }
-);**/
+);
 
 
 // GET Admins tagged with 'admin'
 // tag ID of 'admin' is 191
 // should return Teresa, Kristy, Stuti, Shana, Cynthia
-/**crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
+crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
   function (result) {    
     for (var i in result.values) {
       val = result.values[i];
       console.log(val.id + ": " + val.display_name + " " + val.phone);
 
       Admin.addAdmin(val.display_name, val.phone, function(data) {
-        console.log(data.message)
+        console.log(data.message);
       });
     }
   }
-);**/
+);
 
 
 module.exports = router;
