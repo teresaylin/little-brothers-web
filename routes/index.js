@@ -17,23 +17,25 @@ var config = {
 };
 var crmAPI = require('civicrm')(config);
 
-// Twilio API configuration
-function sendText(text) {
-  var accountSid = 'AC426dcc5ed9ebf6f79429928d75d7a8a7';
-  var authToken = '4d418f9eed21c3fbc565802c78921e2f';
+// Initializing PlivoRestApi
+var plivo = require('plivo');
+var p = plivo.RestAPI({
+  authId: process.env.PLIVO_AUTHID,
+  authToken: process.env.PLIVO_AUTHTOK
+});
 
-  var client = require('twilio')(accountSid, authToken);
-
-  client.messages.create({
-    to: "+12068495866",
-    from: "+16172022236",
-    body: text,
-    }, function(err, message) {
-      if (err) {
-        console.error(err.message);
-      }
-  })
-}
+// Send an SMS through Plivo
+var params = {
+    'src': process.env.PLIVO_NUMBER,
+    'dst' : '18176892020',
+    'text' : "Hello, how are you?",
+};
+p.send_message(params, function (status, response) {
+    console.log('Status: ', status);
+    console.log('API Response:\n', response);
+    console.log('Message UUID:\n', response['message_uuid']);
+    console.log('Api ID:\n', response['api_id']);
+});
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -91,30 +93,32 @@ router.get('/logout', function(req, res, next) {
 // setInterval takes in a function and a delay
 // delay is in milliseconds (1 sec = 1000 ms)
 
+/* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
-var timer_requests = setInterval(newRequests, 1000*60);
 
-function newRequests() {
-  crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,location,phone_number,details'},
-    function (result) {
-      // if there exists available emergency food requests
-      if (typeof result.values != 'undefined') {
-        for (var i in result.values) {
-          val = result.values[i];
-          var message = "New Emergency Food Request: " + val.custom_102 + " urgently requires groceries. "; //include address later
-          if (typeof val.details != "undefined") {
-            message = message + "Additional details: " + val.details.substring(3, val.details.length - 6) + " "; //substring of val.details cuts out the paragraph html tag (<p> and </p>)
-          }
-          message = message + "Reply \"ACCEPT\" to accept this request.";
-          console.log(message);
-          sendText(message);
-        }
-      } else {
-        console.log("No available emergency food requests at this time.");
-      }
-    }
-  );
-}
+// var timer_requests = setInterval(newRequests, 1000*60);
+
+// function newRequests() {
+//   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,location,phone_number,details'},
+//     function (result) {
+//       // if there exists available emergency food requests
+//       if (typeof result.values != 'undefined') {
+//         for (var i in result.values) {
+//           val = result.values[i];
+//           var message = "New Emergency Food Request: " + val.custom_102 + " urgently requires groceries. "; //include address later
+//           if (typeof val.details != "undefined") {
+//             message = message + "Additional details: " + val.details.substring(3, val.details.length - 6) + " "; //substring of val.details cuts out the paragraph html tag (<p> and </p>)
+//           }
+//           message = message + "Reply \"ACCEPT\" to accept this request.";
+//           console.log(message);
+//           sendText(message);
+//         }
+//       } else {
+//         console.log("No available emergency food requests at this time.");
+//       }
+//     }
+//   );
+// }
 
 
 /* TESTING FOR UPDATING CONTACT INFORMATION OF 'JANE DOE' in CIVICRM DATABASE */
