@@ -17,7 +17,7 @@ var app = express();
 var secrets = require('dotenv').config();
 
 // database setup
-mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/test');
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/test');
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
