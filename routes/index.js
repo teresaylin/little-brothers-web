@@ -122,10 +122,12 @@ router.get('/logout', function(req, res, next) {
 //   );
 // }
 
-
-//UPDATING FIELDS IN CIVI
-//REPLACE GENDER_ID WITH DESIRED FIELD
-crmAPI.call('contact', 'create', {id:'12966', gender_id:'Female'},
+/*
+UPDATING ACTIVITY STATUS IN CIVI
+SPECIFY ID OF ACTVITY
+CHANGE STATUS ID TO SCHEDULED OR COMPLETED 
+*/
+crmAPI.call('Activity', 'create', {id:'68130', activity_type_id:'Emergency Food Package', status_id:'Available'},
   function (result) {
     console.log(result);
 }
