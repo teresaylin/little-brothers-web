@@ -37,6 +37,7 @@ p.send_message(params, function (status, response) {
     console.log('Api ID:\n', response['api_id']);
 });
 
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   var user = req.session.currentUser;
@@ -93,6 +94,7 @@ router.get('/logout', function(req, res, next) {
 // setInterval takes in a function and a delay
 // delay is in milliseconds (1 sec = 1000 ms)
 
+
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
@@ -121,23 +123,13 @@ router.get('/logout', function(req, res, next) {
 // }
 
 
-/* TESTING FOR UPDATING CONTACT INFORMATION OF 'JANE DOE' in CIVICRM DATABASE */
-// crmAPI.create('contact', {id:'12966', return:'display_name,gender_id'},
-//   function (result) {
-//     val=result.values[0]; 
-//     val.gender_id='2'; 
-//     console.log('UPDATED CONTACT: '+ val.display_name + " " + val.gender_id);
-
-//     crmAPI.get('contact', {tag:'190', return:'display_name,phone,country,gender_id'}, 
-//       function (result){
-//         console.log(result); 
-//         for (var i in result.values) {
-//           val = result.values[i];
-//           console.log(val.id + ": " + val.display_name + " " + val.phone + " " + val.country + " " + val.gender_id);
-//         }
-//     });
-//   }
-// );
+//UPDATING FIELDS IN CIVI
+//REPLACE GENDER_ID WITH DESIRED FIELD
+crmAPI.call('contact', 'create', {id:'12966', gender_id:'Female'},
+  function (result) {
+    console.log(result);
+}
+); 
 
 /* GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
 Checks every 24 hours
