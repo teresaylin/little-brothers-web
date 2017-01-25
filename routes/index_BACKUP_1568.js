@@ -50,7 +50,6 @@ function getElderAddress(name, callback)
   );
 }
 
-
 /* GET home page. */
 router.get('/', function(req, res, next) {
   var user = req.session.currentUser;
@@ -107,11 +106,10 @@ router.get('/logout', function(req, res, next) {
 // setInterval takes in a function and a delay
 // delay is in milliseconds (1 sec = 1000 ms)
 
-
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
-var timer_requests = setInterval(newRequests, 1000*60);
+// var timer_requests = setInterval(newRequests, 1000*60);
 
 function newRequests() {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,location,phone_number,details'},
@@ -140,16 +138,24 @@ function newRequests() {
   );
 }
 
-/*
-UPDATING ACTIVITY STATUS IN CIVI
-SPECIFY ID OF ACTVITY
-CHANGE STATUS ID TO SCHEDULED OR COMPLETED 
-*/
-crmAPI.call('Activity', 'create', {id:'68130', activity_type_id:'Emergency Food Package', status_id:'Available'},
-  function (result) {
-    console.log(result);
-}
-); 
+
+/* TESTING FOR UPDATING CONTACT INFORMATION OF 'JANE DOE' in CIVICRM DATABASE */
+// crmAPI.create('contact', {id:'12966', return:'display_name,gender_id'},
+//   function (result) {
+//     val=result.values[0]; 
+//     val.gender_id='2'; 
+//     console.log('UPDATED CONTACT: '+ val.display_name + " " + val.gender_id);
+
+//     crmAPI.get('contact', {tag:'190', return:'display_name,phone,country,gender_id'}, 
+//       function (result){
+//         console.log(result); 
+//         for (var i in result.values) {
+//           val = result.values[i];
+//           console.log(val.id + ": " + val.display_name + " " + val.phone + " " + val.country + " " + val.gender_id);
+//         }
+//     });
+//   }
+// );
 
 /* GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
 Checks every 24 hours
@@ -192,5 +198,7 @@ function newAdmins() {
     }
   );
 }
+
+newRequests();
 
 module.exports = router;

@@ -25,31 +25,17 @@ var p = plivo.RestAPI({
 });
 
 // Send an SMS through Plivo
-function sendText(text)
-{
-  var params = {
-      'src': process.env.PLIVO_NUMBER,
-      'dst' : '18176892020',
-      'text' : text,
-  };
-  p.send_message(params, function (status, response) {
-      console.log('Status: ', status);
-      console.log('API Response:\n', response);
-      console.log('Message UUID:\n', response['message_uuid']);
-      console.log('Api ID:\n', response['api_id']);
-  });
-}
-
-function getElderAddress(name, callback)
-{
-  crmAPI.get('contact', {sort_name: name, return:'street_address, city'},
-    function (result) {
-      var address = result.values[0].street_address + ", " + result.values[0].city;
-      callback(address)
-    }
-  );
-}
-
+var params = {
+    'src': process.env.PLIVO_NUMBER,
+    'dst' : '18176892020',
+    'text' : "Hello, how are you?",
+};
+p.send_message(params, function (status, response) {
+    console.log('Status: ', status);
+    console.log('API Response:\n', response);
+    console.log('Message UUID:\n', response['message_uuid']);
+    console.log('Api ID:\n', response['api_id']);
+});
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -107,49 +93,51 @@ router.get('/logout', function(req, res, next) {
 // setInterval takes in a function and a delay
 // delay is in milliseconds (1 sec = 1000 ms)
 
-
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
-var timer_requests = setInterval(newRequests, 1000*60);
+// var timer_requests = setInterval(newRequests, 1000*60);
 
-function newRequests() {
-  crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,location,phone_number,details'},
-    function (result) {
-      // if there exists available emergency food requests
-      if (typeof result.values != 'undefined') {
-        for (var i in result.values) {
-          val = result.values[i];
-          getElderAddress(val.custom_102, function(address) {
-            var message = "New Emergency Food Request: " + val.custom_102 + " at " + address + " urgently requires groceries. ";
-            if (typeof val.details != "undefined")
-            {
-              var additionalDetails = val.details.substring(3, val.details.length - 6); //substring of val.details cuts out the paragraph html tag (<p> and </p>)
-              additionalDetails.replace('&nbsp;',''); //cleaning up the carriage return, if it's in the details portion
-              message = message + "Additional details: " + additionalDetails + " ";
-            }
-            message = message + "Reply \"ACCEPT\" to accept this request."
-            console.log(message);
-            //sendText(message);
-          });
-        }
-      } else {
-        console.log("No available emergency food requests at this time.");
-      }
-    }
-  );
-}
+// function newRequests() {
+//   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,location,phone_number,details'},
+//     function (result) {
+//       // if there exists available emergency food requests
+//       if (typeof result.values != 'undefined') {
+//         for (var i in result.values) {
+//           val = result.values[i];
+//           var message = "New Emergency Food Request: " + val.custom_102 + " urgently requires groceries. "; //include address later
+//           if (typeof val.details != "undefined") {
+//             message = message + "Additional details: " + val.details.substring(3, val.details.length - 6) + " "; //substring of val.details cuts out the paragraph html tag (<p> and </p>)
+//           }
+//           message = message + "Reply \"ACCEPT\" to accept this request.";
+//           console.log(message);
+//           sendText(message);
+//         }
+//       } else {
+//         console.log("No available emergency food requests at this time.");
+//       }
+//     }
+//   );
+// }
 
-/*
-UPDATING ACTIVITY STATUS IN CIVI
-SPECIFY ID OF ACTVITY
-CHANGE STATUS ID TO SCHEDULED OR COMPLETED 
-*/
-crmAPI.call('Activity', 'create', {id:'68130', activity_type_id:'Emergency Food Package', status_id:'Available'},
-  function (result) {
-    console.log(result);
-}
-); 
+
+/* TESTING FOR UPDATING CONTACT INFORMATION OF 'JANE DOE' in CIVICRM DATABASE */
+// crmAPI.create('contact', {id:'12966', return:'display_name,gender_id'},
+//   function (result) {
+//     val=result.values[0]; 
+//     val.gender_id='2'; 
+//     console.log('UPDATED CONTACT: '+ val.display_name + " " + val.gender_id);
+
+//     crmAPI.get('contact', {tag:'190', return:'display_name,phone,country,gender_id'}, 
+//       function (result){
+//         console.log(result); 
+//         for (var i in result.values) {
+//           val = result.values[i];
+//           console.log(val.id + ": " + val.display_name + " " + val.phone + " " + val.country + " " + val.gender_id);
+//         }
+//     });
+//   }
+// );
 
 /* GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
 Checks every 24 hours
@@ -163,11 +151,14 @@ function newVolunteers() {
     function (result) {
       for (var i in result.values) {
         val = result.values[i];
+        console.log(val.id + ": " + val.display_name + " " + val.phone);
+
         Volunteer.addVolunteer(val.display_name, val.phone, function(data) {
           console.log(data.message);
         });
       }
-    });
+    }
+  );
 }
 
 
