@@ -50,7 +50,6 @@ function getElderAddress(name, callback)
   );
 }
 
-
 /* GET home page. */
 router.get('/', function(req, res, next) {
   var user = req.session.currentUser;
@@ -145,11 +144,12 @@ UPDATING ACTIVITY STATUS IN CIVI
 SPECIFY ID OF ACTVITY
 CHANGE STATUS ID TO SCHEDULED OR COMPLETED 
 */
-crmAPI.call('Activity', 'create', {id:'68130', activity_type_id:'Emergency Food Package', status_id:'Available'},
-  function (result) {
-    console.log(result);
-}
-); 
+// crmAPI.call('Activity', 'create', {id:'68130', activity_type_id:'Emergency Food Package', status_id:'Available'},
+//   function (result) {
+//     console.log(result);
+// }
+// ); 
+
 
 /* GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
 Checks every 24 hours
