@@ -137,6 +137,7 @@ router.post('/plivo', function(req, res, next) {
 
 router.post('/sms', function(req, res, next) {
   var message = req.body.text_message;
+  console.log(message);
   var user = req.session.currentUser;
   sendText(message);
   res.render('home', { user: user });
