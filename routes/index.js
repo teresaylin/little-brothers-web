@@ -1,6 +1,8 @@
 var express = require('express');
 var bcrypt = require('bcrypt');
 var router = express.Router();
+var querystring = require('querystring');
+var http = require('http');
 
 var User = require('../models/user');
 var Admin = require('../models/admin');
@@ -28,13 +30,12 @@ var url = 'https://api.plivo.com/v1/Account/';
 // Send an SMS through Plivo
 function sendText(text)
 {
-  var xhr = new XMLHttpRequest();
   var params = {
       'src': process.env.PLIVO_NUMBER,
       'dst' : '18176892020',
-      'text' : text,
-      'url': 'https://lbfe.herokuapp.com/plivo',
-      'method': 'POST'      
+      'text' : text
+      // 'url': 'https://lbfe.herokuapp.com/plivo',
+      // 'method': 'POST'      
   };
   p.send_message(params, function (status, response) {
       console.log('Status: ', status);
@@ -43,9 +44,29 @@ function sendText(text)
       console.log('Api ID:\n', response['api_id']);
   });
 
-  xhr.open('POST', url+process.env.PLIVO_AUTHID+'/Message/', true);
-  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  xhr.send(params);
+  var post_data = querystring.stringify(params);
+
+  // Where to post to
+  var post_options = {
+    host: 'https://lbfe.herokuapp.com',
+    path: '/plivo',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  };
+
+  // Set up the request
+  var post_req = http.request(post_options, function(res) {
+    res.setEncoding('utf8');
+    res.on('data', function(response) {
+      console.log('Response: ' + response);
+    })
+  });
+
+  // Post the data
+  post_req.write(post_data);
+  post_req.end();
 }
 
 function getElderAddress(name, callback)
