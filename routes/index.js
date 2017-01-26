@@ -30,7 +30,7 @@ function sendText(text)
   var params = {
       'src': process.env.PLIVO_NUMBER,
       'dst' : '18176892020',
-      'text' : text,
+      'text' : text
   };
   p.send_message(params, function (status, response) {
       console.log('Status: ', status);
@@ -49,6 +49,9 @@ function getElderAddress(name, callback)
     }
   );
 }
+
+/* Testing SMS sending */
+// sendText('hello');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -175,6 +178,8 @@ function newVolunteers() {
 Checks every 5 days
 tag ID of 'admin' is 191
 should return Teresa, Kristy, Stuti, Shana, Cynthia */
+
+newAdmins();
 
 var timer_admins = setInterval(newAdmins, 1000*60*24*5);
 
