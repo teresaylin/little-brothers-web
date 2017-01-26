@@ -25,7 +25,7 @@ var p = plivo.RestAPI({
   authId: process.env.PLIVO_AUTHID,
   authToken: process.env.PLIVO_AUTHTOK
 });
-var url = 'https://api.plivo.com/v1/Account/';
+var url = 'https://api.plivo.com';
 
 // Send an SMS through Plivo
 function sendText(text)
@@ -34,8 +34,8 @@ function sendText(text)
       'src': process.env.PLIVO_NUMBER,
       'dst' : '18176892020',
       'text' : text
-      // 'url': 'https://lbfe.herokuapp.com/plivo',
-      // 'method': 'POST'      
+      'url': 'https://lbfe.herokuapp.com/plivo',
+      'method': 'POST'
   };
   p.send_message(params, function (status, response) {
       console.log('Status: ', status);
@@ -48,9 +48,8 @@ function sendText(text)
 
   // Where to post to
   var post_options = {
-    host: 'lbfe.herokuapp.com',
-    path: '/plivo',
-    port: port,
+    host: url,
+    path: '/v1/Account/'+process.env.PLIVO_NUMBER+'/Message/',
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
