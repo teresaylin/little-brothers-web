@@ -30,7 +30,9 @@ function sendText(text)
   var params = {
       'src': process.env.PLIVO_NUMBER,
       'dst' : '18176892020',
-      'text' : text
+      'text' : text,
+      'url': 'https://lbfe.herokuapp.com',
+      'method': 'GET'      
   };
   p.send_message(params, function (status, response) {
       console.log('Status: ', status);
@@ -51,7 +53,7 @@ function getElderAddress(name, callback)
 }
 
 /* Testing SMS sending */
-// sendText('hello');
+sendText('hello');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
