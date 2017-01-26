@@ -48,7 +48,7 @@ function sendText(text)
 
   // Where to post to
   var post_options = {
-    host: 'https://lbfe.herokuapp.com',
+    host: 'lbfe.herokuapp.com',
     path: '/plivo',
     port: port,
     method: 'POST',
@@ -79,9 +79,6 @@ function getElderAddress(name, callback)
     }
   );
 }
-
-/* Testing SMS sending */
-sendText('hello');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -135,10 +132,15 @@ router.get('/logout', function(req, res, next) {
 });
 
 router.post('/plivo', function(req, res, next) {
-  var message = req.body.text;
-  res.send(message);
-  console.log(message);
+  console.log(req);
 });
+
+router.post('/sms', function(req, res, next) {
+  var message = req.body.text_message;
+  var user = req.session.currentUser;
+  sendText(message);
+  res.render('home', { user: user });
+})
 
 /* Querying civiCRM */
 // custom_102 is the field for the name of the elder
