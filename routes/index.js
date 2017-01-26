@@ -9,7 +9,7 @@ var Admin = require('../models/admin');
 var Volunteer = require('../models/volunteer');
 
 var secrets = require('dotenv').config();
-
+var port = process.env.PORT || 8080;
 // civiCRM API configuration using Node package 'civicrm'
 var config = {
   server: process.env.LB_URL,
@@ -50,6 +50,7 @@ function sendText(text)
   var post_options = {
     host: 'https://lbfe.herokuapp.com',
     path: '/plivo',
+    port: port,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
