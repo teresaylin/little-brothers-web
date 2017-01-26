@@ -175,13 +175,11 @@ function newVolunteers() {
 
 
 /* GET Admins tagged with 'admin'
-Checks every 5 days
+Checks every time website is visited
 tag ID of 'admin' is 191
 should return Teresa, Kristy, Stuti, Shana, Cynthia */
 
 newAdmins();
-
-var timer_admins = setInterval(newAdmins, 1000*60*24*5);
 
 function newAdmins() {
   crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
