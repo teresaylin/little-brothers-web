@@ -131,7 +131,7 @@ router.get('/logout', function(req, res, next) {
 });
 
 router.post('/plivo', function(req, res, next) {
-  console.log(req);
+  console.log(req.body);
 });
 
 router.post('/sms', function(req, res, next) {
