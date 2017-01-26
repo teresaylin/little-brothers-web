@@ -25,7 +25,6 @@ var p = plivo.RestAPI({
   authId: process.env.PLIVO_AUTHID,
   authToken: process.env.PLIVO_AUTHTOK
 });
-var url = 'https://api.plivo.com';
 
 // Send an SMS through Plivo
 function sendText(text)
@@ -48,7 +47,7 @@ function sendText(text)
 
   // Where to post to
   var post_options = {
-    host: url,
+    host: 'https://api.plivo.com',
     path: '/v1/Account/'+process.env.PLIVO_NUMBER+'/Message/',
     method: 'POST',
     headers: {
