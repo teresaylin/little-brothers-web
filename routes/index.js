@@ -23,16 +23,18 @@ var p = plivo.RestAPI({
   authId: process.env.PLIVO_AUTHID,
   authToken: process.env.PLIVO_AUTHTOK
 });
+var url = 'https://api.plivo.com/v1/Account/';
 
 // Send an SMS through Plivo
 function sendText(text)
 {
+  var xhr = new XMLHttpRequest();
   var params = {
       'src': process.env.PLIVO_NUMBER,
       'dst' : '18176892020',
       'text' : text,
-      'url': 'https://lbfe.herokuapp.com',
-      'method': 'GET'      
+      'url': 'https://lbfe.herokuapp.com/plivo',
+      'method': 'POST'      
   };
   p.send_message(params, function (status, response) {
       console.log('Status: ', status);
@@ -40,6 +42,10 @@ function sendText(text)
       console.log('Message UUID:\n', response['message_uuid']);
       console.log('Api ID:\n', response['api_id']);
   });
+
+  xhr.open('POST', url+process.env.PLIVO_AUTHID+'/Message/', true);
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhr.send(params);
 }
 
 function getElderAddress(name, callback)
@@ -104,6 +110,12 @@ router.post('/login', function(req, res, next) {
 router.get('/logout', function(req, res, next) {
   req.session.currentUser = undefined;
   res.redirect('/');
+});
+
+router.post('/plivo', function(req, res, next) {
+  var message = req.body.text;
+  res.send(message);
+  console.log(message);
 });
 
 /* Querying civiCRM */
