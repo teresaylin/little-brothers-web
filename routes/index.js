@@ -32,7 +32,7 @@ function sendText(text)
   var params = {
       'src': process.env.PLIVO_NUMBER,
       'dst' : '18176892020',
-      'text' : text
+      'text' : text,
       'url': 'https://lbfe.herokuapp.com/plivo',
       'method': 'POST'
   };
