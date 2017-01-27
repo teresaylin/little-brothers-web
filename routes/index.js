@@ -30,9 +30,9 @@ function sendText(text, phone)
   var params = {
       'src': process.env.PLIVO_NUMBER,
       'dst' : phone,
-      'text' : text
-      // 'url': 'https://lbfe.herokuapp.com/plivo',
-      // 'method': 'POST'
+      'text' : text,
+      'url': 'https://lbfe.herokuapp.com/plivo',
+      'method': 'POST'
   };
   p.send_message(params, function (status, response) {
       console.log('Status: ', status);
