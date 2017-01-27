@@ -1,8 +1,6 @@
 var express = require('express');
 var bcrypt = require('bcrypt');
 var router = express.Router();
-var querystring = require('querystring');
-var http = require('http');
 
 var User = require('../models/user');
 var Admin = require('../models/admin');
@@ -112,7 +110,6 @@ router.post('/plivo', function(req, res, next) {
 router.post('/sms', function(req, res, next) {
   var message = req.body.text_message;
   var phone = req.body.phone_num;
-  console.log(message);
   var user = req.session.currentUser;
   sendText(message, phone);
   res.render('home', { user: user });

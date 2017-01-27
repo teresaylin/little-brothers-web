@@ -13,25 +13,23 @@
 
     <div class="puddle-container">
 
-      <div class="left">
-        <h1>Little Brothers Volunteers Matching Web App</h1>
-      </div>
-
+      <form class="form-group puddle-form" action="/sms" method="post">
+        <table>
+          <tr>
+            <td><label>Text message to send</label></td>
+            <td><input type="text" class="form-control" name="text_message" placeholder="Message"></td>
+          </tr>
+          <tr>
+            <td><label>Phone number to send to (include country code)</label></td>
+            <td><input type="text" class="form-control" name="phone_num" placeholder="Phone number"></td>
+          </tr>
+        </table>
+        <button type="submit">Text</button>
+      </form>
+      
     </div>
 
-    <form class="form-group puddle-form" action="/sms" method="post">
-      <table>
-        <tr>
-          <td><label>Text message to send</label></td>
-          <td><input type="text" class="form-control" name="text_message" placeholder="Message"></td>
-        </tr>
-        <tr>
-          <td><label>Phone number to send to (include country code)</label></td>
-          <td><input type="text" class="form-control" name="phone_num" placeholder="Phone number"></td>
-        </tr>
-      </table>
-      <button type="submit">Text</button>
-    </form>
+
 
   </body>
 </html>
