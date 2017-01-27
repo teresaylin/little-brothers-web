@@ -29,7 +29,25 @@
       
     </div>
 
+    <table class="table table-striped col-md-4">
+          <thead>
+          <tr>
+          <th>Volunteer Name</th>
+          <th>Volunteer Phone Number</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% volunteers.forEach(function(volunteer){ %>
 
+              <tr>
+                  <td><%= volunteer.name %></td>
+                  <td><%= volunteer.phone %></td>
+              </tr>
+
+          <%  }) %>
+
+          </tbody>
+    </table>
 
   </body>
 </html>
