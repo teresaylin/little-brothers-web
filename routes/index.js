@@ -143,7 +143,7 @@ router.post('/changepwd', function(req, res, next) {
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
-var timer_requests = setInterval(newRequests, 1000*60);
+// var timer_requests = setInterval(newRequests, 1000*60);
 
 newRequests();
 
