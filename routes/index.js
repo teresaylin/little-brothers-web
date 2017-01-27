@@ -47,7 +47,11 @@ function getElderAddress(name, callback)
   crmAPI.get('contact', {sort_name: name, return:'street_address, city'},
     function (result) {
       var address = result.values[0].street_address + ", " + result.values[0].city;
-      callback(address)
+      if (address === ", ") //if both the street address and the city are empty
+      {
+        address = "(NO ADDRESS PROVIDED)"
+      }
+      callback(name, address)
     }
   );
 }
@@ -126,7 +130,9 @@ router.post('/sms', function(req, res, next) {
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
-var timer_requests = setInterval(newRequests, 1000*60);
+//var timer_requests = setInterval(newRequests, 1000*60);
+
+newRequests();
 
 function newRequests() {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,location,phone_number,details'},
@@ -134,18 +140,20 @@ function newRequests() {
       // if there exists available emergency food requests
       if (typeof result.values != 'undefined') {
         for (var i in result.values) {
-          val = result.values[i];
-          getElderAddress(val.custom_102, function(address) {
-            var message = "New Emergency Food Request: " + val.custom_102 + " at " + address + " urgently requires groceries. ";
+          var val = result.values[i];
+          getElderAddress(val.custom_102, function(name, address) {
+            var message = "New Emergency Food Request: " + name + " at " + address + " urgently requires groceries. ";
             if (typeof val.details != "undefined")
             {
               var additionalDetails = val.details.substring(3, val.details.length - 6); //substring of val.details cuts out the paragraph html tag (<p> and </p>)
-              additionalDetails.replace('&nbsp;',''); //cleaning up the carriage return, if it's in the details portion
+              additionalDetails = additionalDetails.replace('&nbsp;',''); //cleaning up the carriage return, if it's in the details portion
               message = message + "Additional details: " + additionalDetails + " ";
             }
             message = message + "Reply \"ACCEPT\" to accept this request."
             console.log(message);
-            //sendText(message);
+            getVolunteerNumbers(function(numberString) {
+              sendText(message, numberString);
+            });
           });
         }
       } else {
@@ -172,7 +180,7 @@ Checks every 24 hours
 tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
 
-var timer_volunteers = setInterval(newVolunteers, 1000*60*24);
+/*var timer_volunteers = setInterval(newVolunteers, 1000*60*24);
 
 function newVolunteers() {
   crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
@@ -184,6 +192,24 @@ function newVolunteers() {
         });
       }
     });
+}*/
+
+function getVolunteerNumbers(callback)
+{
+	crmAPI.get('contact', {tag:'190', return:'phone'},
+    function (result) {
+      var numberString = "";
+      for (var i in result.values) {
+        var number = result.values[i].phone;
+        if (!(number === "")) //only add number if there is actually a number in the database
+        {
+          numberString += "1" + number + "<"; //Plivo requires < delimiter between different phone numbers; also assuming that volunteer lives in US
+        }
+      }
+      numberString = numberString.substring(0, numberString.length - 1) //removing extraneous "<" character at end
+      callback(numberString);
+    });
+
 }
 
 
@@ -192,7 +218,7 @@ Checks every time website is visited
 tag ID of 'admin' is 191
 should return Teresa, Kristy, Stuti, Shana, Cynthia */
 
-newAdmins();
+/*newAdmins();
 
 function newAdmins() {
   crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
@@ -207,6 +233,6 @@ function newAdmins() {
       }
     }
   );
-}
+}*/
 
 module.exports = router;
