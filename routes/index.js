@@ -125,7 +125,7 @@ router.post('/changepwd', function(req, res, next) {
   var new1 = req.body.pwd_new;
   var new2 = req.body.pwd_confirm;
 
-  User.changePassword(user, old, new1, new2, function(data) {\
+  User.changePassword(user, old, new1, new2, function(data) {
     if (data.success) {
       res.render('login', { message: data.message });
     } else {
