@@ -12,12 +12,24 @@
     <% include partials/navbar_logged_in %>
 
     <div class="puddle-container">
-
-      <div class="left">
-        <h1>My Account</h1>
-        <div><%= message %></div>
-        
-      </div>
+      <p class="warning"><%= message %></p>
+      <form class="form-group puddle-form" action="/changepwd" method="post">
+        <table>
+          <tr>
+            <td><label>Current password</label></td>
+            <td><input type="password" class="form-control" name="pwd_old" placeholder="Old password"></td>
+          </tr>
+          <tr>
+            <td><label>New password</label></td>
+            <td><input type="password" class="form-control" name="pwd_new" placeholder="New password"></td>
+          </tr>
+          <tr>
+            <td><label>Confirm  new password</label></td>
+            <td><input type="password" class="form-control" name="pwd_confirm" placeholder="Confirm password"></td>
+          </tr>
+        </table>
+        <button type="submit">Text</button>
+      </form>
 
     </div>
   </body>

@@ -119,7 +119,20 @@ router.post('/sms', function(req, res, next) {
   res.render('home', { user: user });
 });
 
+router.post('/changepwd', function(req, res, next) {
+  var user = req.session.currentUser.username;
+  var old = req.body.pwd_old;
+  var new1 = req.body.pwd_new;
+  var new2 = req.body.pwd_confirm;
 
+  User.changePassword(user, old, new1, new2, function(data) {\
+    if (data.success) {
+      res.render('login', { message: data.message });
+    } else {
+      res.render('user', { user: user, message: data.message });
+    }
+  });
+});
 
 /* Querying civiCRM */
 // custom_102 is the field for the name of the elder
@@ -130,7 +143,7 @@ router.post('/sms', function(req, res, next) {
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
-//var timer_requests = setInterval(newRequests, 1000*60);
+var timer_requests = setInterval(newRequests, 1000*60);
 
 newRequests();
 
@@ -180,7 +193,7 @@ Checks every 24 hours
 tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
 
-/*var timer_volunteers = setInterval(newVolunteers, 1000*60*24);
+var timer_volunteers = setInterval(newVolunteers, 1000*60*24);
 
 function newVolunteers() {
   crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
@@ -192,7 +205,7 @@ function newVolunteers() {
         });
       }
     });
-}*/
+}
 
 function getVolunteerNumbers(callback)
 {
@@ -218,7 +231,7 @@ Checks every time website is visited
 tag ID of 'admin' is 191
 should return Teresa, Kristy, Stuti, Shana, Cynthia */
 
-/*newAdmins();
+newAdmins();
 
 function newAdmins() {
   crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
@@ -233,6 +246,6 @@ function newAdmins() {
       }
     }
   );
-}*/
+}
 
 module.exports = router;

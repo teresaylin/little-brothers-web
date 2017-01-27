@@ -6,7 +6,6 @@ var Admin = require('../models/admin')
 var userSchema = new mongoose.Schema({
   username: { type: String, required: true, index: { unique: true } },
   password_hash: { type: String, required: true },
-  volunteers: [{ type: String, ref: 'volunteerSchema' }],
   admin: { type: String, required: true, ref: 'adminSchema'}
 });
 
@@ -46,7 +45,6 @@ userSchema.statics.register = function(fullname, username, password, password_co
             var new_user = new User({
               username: username,
               password_hash: hash,
-              volunteers: [],
               admin: user.name
             });
             new_user.save(function(err) {
@@ -76,14 +74,14 @@ userSchema.statics.authenticate = function(username, password, cb) {
   this.findOne({ username: username }, function(err, user) {
     if (user === null) {
       cb({ success: false,
-                 message: 'Username or password is not correct',
-                 user: {} });
+           message: 'Username or password is not correct',
+           user: {} });
     } else {
       bcrypt.compare(password, user.password_hash, function(err, result) {
         if (result === false) {
           cb({ success: false,
-                     message: 'Username or password is not correct',
-                     user: {} });
+               message: 'Username or password is not correct',
+               user: {} });
         } else {
           cb({ success: true, message: '', user: user });
         }
@@ -92,7 +90,51 @@ userSchema.statics.authenticate = function(username, password, cb) {
   });
 };
 
+/*
+ * Change password.
+ * cb expects an object with 3 fields:
+ *    success: whether the login was successful
+ *    message: string shown to the user trying to login
+ *    user: the user object, if success == true
+ */
+userSchema.statics.changePassword = function(username, old, new1, new2, cb) {
+  var User = this;
+  User.findOne({ 'username': username }, function(err, user) {
+    if (user) {
+      bcrypt.compare(old, user.password_hash, function(err, result) {
+        if (result === false) {
+          cb({ success: false,
+            message: 'Current password is not correct',
+            user: user });
+        } else {
+          if (new1 === new2 && new1.length >= 8) {
+            bcrypt.hash(new1, 10, function(err, hash) {
+              User.update({ 'username': username },
+                { $set: { 'password_hash': hash } },
+                function(err, result) {
+                  cb({ success: true, message: 'Password successfully updated! Please login again.', user: user });
+              });
+            });
+          } else if (new1 === new2 && new1.length < 8) {
+            console.log('match, but short');
+            cb({ success: false,
+              message: 'New password needs to be at least 8 characters long!',
+              user: user });
+          } else {
+            console.log('no match');
+            cb({ success: false,
+              message: 'New passwords do not match',
+              user: user });
+          }
+        }
+      });
+    } else {
+      cb({ success: false, message: 'This user does not exist'});
+    }
+  });
+};
+
+
 var User = mongoose.model('User', userSchema);
-// var Admin = mongoose.model('Admin', adminSchema);
 
 module.exports = User;
