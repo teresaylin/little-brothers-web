@@ -27,11 +27,11 @@ var p = plivo.RestAPI({
 });
 
 // Send an SMS through Plivo
-function sendText(text)
+function sendText(text, phone)
 {
   var params = {
       'src': process.env.PLIVO_NUMBER,
-      'dst' : '14087978871',
+      'dst' : phone,
       'text' : text,
       'url': 'https://lbfe.herokuapp.com/plivo',
       'method': 'POST'
@@ -42,31 +42,6 @@ function sendText(text)
       console.log('Message UUID:\n', response['message_uuid']);
       console.log('Api ID:\n', response['api_id']);
   });
-
-  // var post_data = querystring.stringify(params);
-
-  // // Where to post to
-  // var post_options = {
-  //   host: 'api.plivo.com',
-  //   path: '/v1/Account/'+process.env.PLIVO_NUMBER+'/Message/',
-  //   port: 80,
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/x-www-form-urlencoded'
-  //   }
-  // };
-
-  // // Set up the request
-  // var post_req = http.request(post_options, function(res) {
-  //   res.setEncoding('utf8');
-  //   res.on('data', function(response) {
-  //     console.log('Response: ' + response);
-  //   })
-  // });
-
-  // // Post the data
-  // post_req.write(post_data);
-  // post_req.end();
 }
 
 function getElderAddress(name, callback)
@@ -136,9 +111,10 @@ router.post('/plivo', function(req, res, next) {
 
 router.post('/sms', function(req, res, next) {
   var message = req.body.text_message;
+  var phone = req.body.phone_num;
   console.log(message);
   var user = req.session.currentUser;
-  sendText(message);
+  sendText(message, phone);
   res.render('home', { user: user });
 })
 
