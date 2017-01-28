@@ -156,41 +156,20 @@ router.post('/replyToSMS', function(req, res, next) {
   var text = req.body.Text || req.query.Text;
 
   var body;
-  var firstToken = text.split(" ")[0].toLowerCase();
-  if (firstToken === "accept")
-  {
-    var nameInText = text.substring(7); //everything after "accept "
-    //cycle through all elder names in db of current available requests
-      //if something matches
-        //call the function that will change the activity status in civi
-        //body = "You have been assigned to deliver emergency groceries to " + elder name + " at " + address + ". Please text \"COMPLETE\" upon completion, or \"CANCEL\" to cancel.";
-        //send text to all other volunteers saying that the elder has had someone assigned to them
-      //else
-        //body = "\"" + nameInText + "\" does not match the name of any elder who currently requires assistance. Someone may have claimed this request before you, or this may be due to a spelling error.";
-  }
-  else if (firstToken === "complete") 
-  {
-    //if the from_number is currently assigned to a request
-      //update db appropriately
-      //update civi appropriately
-      //body = "Thank you for your service!";
-    //else
-      //"Invalid input. You are not currently assigned to a request."
-  }
-  else if (firstToken === "cancel")
-  {
-    //if the from_number is currently assigned to a request
-      //update db appropriately
-      //update civi appropriately (if necessary??)
-      //body = "You have cancelled your assignment to deliver emergency grocieries to " + elder name + ". We hope you are able to donate your time in the future.";
-  }
-  else
-  {
+  var splitText = text.split(" ");
+  var firstToken = splitText[0].toLowerCase();
+  var phoneNum = from_number.substring(1);
+
+  if (firstToken === "accept" || firstToken === "complete" || firstToken === "cancel") {
+    var nameInText = splitText[1] + ' ' + splitText[2];
+    Activity.updateActivity(firstToken, nameInText, phoneNum, function(data) {
+      sendText(data.message, from_number);
+    });
+  } else {
     body = "Invalid input. Please try again.";
   }
   
-
-  sendText(body, from_number);
+  // sendText(body, from_number);
 });
 
 /* Querying civiCRM */
@@ -204,7 +183,7 @@ router.post('/replyToSMS', function(req, res, next) {
 
 // var timer_requests = setInterval(newRequests, 1000*60);
 
-newRequests();
+// newRequests();
 
 function newRequests() {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details,id'},
@@ -260,6 +239,7 @@ tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
 
 var timer_volunteers = setInterval(newVolunteers, 1000*60*24);
+newVolunteers();
 
 function newVolunteers() {
   crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
@@ -312,6 +292,5 @@ function newAdmins() {
     }
   );
 }
-
 
 module.exports = router;
