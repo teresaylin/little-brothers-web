@@ -56,6 +56,26 @@ function getElderAddress(name, callback)
   );
 }
 
+router.get('/home', function (req, res, next) {
+  console.log("got here");
+
+  var user = req.session.currentUser;
+
+  var query = Volunteer.find({});
+
+  query.exec(function (err, volunteers) {
+      if (err) {
+          throw Error;
+      }
+      res.render('home', {volunteers: volunteers, user:user});
+      //console.log('user info:');
+      //console.log(user);
+      //console.log('volunteers info:');
+      //console.log(volunteers);
+  });
+
+});
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   var user = req.session.currentUser;
@@ -116,7 +136,16 @@ router.post('/sms', function(req, res, next) {
   var phone = req.body.phone_num;
   var user = req.session.currentUser;
   sendText(message, phone);
-  res.render('home', { user: user });
+
+  var query = Volunteer.find({});
+
+  query.exec(function (err, volunteers) {
+      if (err) {
+          throw Error;
+      }
+      res.render('home', {volunteers: volunteers, user:user});
+  });
+
 });
 
 router.post('/changepwd', function(req, res, next) {
