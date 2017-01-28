@@ -56,7 +56,7 @@ function getElderAddress(name, callback)
   );
 }
 
-router.get('/home', function (req, res, next) {
+router.get('/volunteers', function (req, res, next) {
   console.log("got here");
 
   var user = req.session.currentUser;
@@ -67,7 +67,7 @@ router.get('/home', function (req, res, next) {
       if (err) {
           throw Error;
       }
-      res.render('home', {volunteers: volunteers, user:user});
+      res.render('volunteers', {volunteers: volunteers, user:user});
       //console.log('user info:');
       //console.log(user);
       //console.log('volunteers info:');
@@ -137,14 +137,9 @@ router.post('/sms', function(req, res, next) {
   var user = req.session.currentUser;
   sendText(message, phone);
 
-  var query = Volunteer.find({});
+  
+  res.render('home', {user:user});
 
-  query.exec(function (err, volunteers) {
-      if (err) {
-          throw Error;
-      }
-      res.render('home', {volunteers: volunteers, user:user});
-  });
 
 });
 

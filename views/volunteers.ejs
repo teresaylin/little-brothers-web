@@ -13,20 +13,26 @@
 
     <div class="puddle-container">
 
-      <form class="form-group puddle-form" action="/sms" method="post">
-        <table>
+        <table class="table table-striped col-md-4">
+          <thead>
           <tr>
-            <td><label>Text message to send</label></td>
-            <td><input type="text" class="form-control" name="text_message" placeholder="Message"></td>
+          <th>Volunteer Name</th>
+          <th>Volunteer Phone Number</th>
           </tr>
-          <tr>
-            <td><label>Phone number to send to (include country code)</label></td>
-            <td><input type="text" class="form-control" name="phone_num" placeholder="Phone number"></td>
-          </tr>
+          </thead>
+          <tbody>
+          <% volunteers.forEach(function(volunteer){ %>
+
+              <tr>
+                  <td><%= volunteer.name %></td>
+                  <td><%= volunteer.phone %></td>
+              </tr>
+
+          <%  }) %>
+
+          </tbody>
         </table>
-        <button type="submit">Text</button>
-      </form>
-      
+
     </div>
 
   </body>
