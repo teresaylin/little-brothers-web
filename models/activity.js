@@ -8,7 +8,9 @@ var activitySchema = new mongoose.Schema({
   elderName: { type: String, required: true },
   status: { type: String, default: 'Available', required: true },
   volunteer: { type: String, required: false, ref: 'volunteerSchema' },
-  resends: { type: Number, default: 1, required: true }
+  resends: { type: Number, default: 1, required: true },
+  purchased: { type: String },
+  toReimburse: { type: String }
 });
 
 /* Create an entry for a new Emergency Food Package activity */
