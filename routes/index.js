@@ -5,6 +5,7 @@ var router = express.Router();
 var User = require('../models/user');
 var Admin = require('../models/admin');
 var Volunteer = require('../models/volunteer');
+var Activity = require('../models/activity');
 
 var secrets = require('dotenv').config();
 var port = process.env.PORT || 8080;
@@ -51,16 +52,13 @@ function getElderAddress(name, callback)
       {
         address = "(NO ADDRESS PROVIDED)"
       }
-      callback(name, address)
+      callback(name, address);
     }
   );
 }
 
 router.get('/volunteers', function (req, res, next) {
-  console.log("got here");
-
   var user = req.session.currentUser;
-
   var query = Volunteer.find({});
 
   query.exec(function (err, volunteers) {
@@ -68,12 +66,7 @@ router.get('/volunteers', function (req, res, next) {
           throw Error;
       }
       res.render('volunteers', {volunteers: volunteers, user:user});
-      //console.log('user info:');
-      //console.log(user);
-      //console.log('volunteers info:');
-      //console.log(volunteers);
   });
-
 });
 
 /* GET home page. */
@@ -135,12 +128,8 @@ router.post('/sms', function(req, res, next) {
   var message = req.body.text_message;
   var phone = req.body.phone_num;
   var user = req.session.currentUser;
-  sendText(message, phone);
-
-  
+  sendText(message, phone);  
   res.render('home', {user:user});
-
-
 });
 
 router.post('/changepwd', function(req, res, next) {
@@ -218,12 +207,14 @@ router.post('/replyToSMS', function(req, res, next) {
 newRequests();
 
 function newRequests() {
-  crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,location,phone_number,details'},
+  crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details,id'},
     function (result) {
       // if there exists available emergency food requests
       if (typeof result.values != 'undefined') {
         for (var i in result.values) {
           var val = result.values[i];
+          var activityID = val.id;
+
           getElderAddress(val.custom_102, function(name, address) {
             var message = "New Emergency Food Request: " + name + " at " + address + " urgently requires groceries. ";
             if (typeof val.details != "undefined")
@@ -237,6 +228,11 @@ function newRequests() {
             getVolunteerNumbers(function(numberString) {
               sendText(message, numberString);
             });
+          });
+
+          // Adding request to db if it has not been added
+          Activity.newActivity(activityID, val.custom_102, function(data) {
+            console.log(data.message);
           });
         }
       } else {
@@ -292,7 +288,6 @@ function getVolunteerNumbers(callback)
       numberString = numberString.substring(0, numberString.length - 1) //removing extraneous "<" character at end
       callback(numberString);
     });
-
 }
 
 
