@@ -59,14 +59,34 @@ function getElderAddress(name, callback)
 
 router.get('/volunteers', function (req, res, next) {
   var user = req.session.currentUser;
-  var query = Volunteer.find({});
-
-  query.exec(function (err, volunteers) {
+  if (user) { //if logged in
+    var query = Volunteer.find({});
+    query.exec(function (err, volunteers) {
       if (err) {
           throw Error;
       }
       res.render('volunteers', {volunteers: volunteers, user:user});
-  });
+    });
+  } else { //redirect to login in page if not logged in
+    res.redirect('/login');
+  }
+  
+});
+
+router.get('/activities', function (req, res, next) {
+  var user = req.session.currentUser;
+  if (user) { //if logged in
+    var query = Activity.find({});
+
+    query.exec(function (err, activities) {
+        if (err) {
+            throw Error;
+        }
+        res.render('activities', {activities: activities, user:user});
+    });
+  } else { //redirect to login in page if not logged in
+    res.redirect('/login');
+  }
 });
 
 /* GET home page. */

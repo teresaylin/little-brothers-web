@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Little Brothers Web</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel='stylesheet' href='/stylesheets/style.css'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+
+    <% include partials/navbar_logged_in %>
+
+    <div class="puddle-container">
+
+        <table class="table table-striped col-md-4">
+          <h2>Available Activities </h2>
+          <thead>
+          <tr>
+          <th>Elder Name</th>
+          <th>Status</th>
+          <th>Volunteer Assigned</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% activities.forEach(function(activity){ %>
+              <%if (activity.status == "Available") { %>
+                <tr>
+                    <td><%= activity.elderName %></td>
+                    <td><%= activity.status %></td>
+                    <td><%= activity.volunteer %></td>
+                </tr>
+              <% } %>
+          <%  }) %>
+
+          </tbody>
+        </table>
+        <br><br>
+        <table class="table table-striped col-md-4">
+          <h2>Scheduled Activities </h2>
+          <thead>
+          <tr>
+          <th>Elder Name</th>
+          <th>Status</th>
+          <th>Volunteer Assigned</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% activities.forEach(function(activity){ %>
+              <%if (activity.status == "Scheduled") { %>
+                <tr>
+                    <td><%= activity.elderName %></td>
+                    <td><%= activity.status %></td>
+                    <td><%= activity.volunteer %></td>
+                </tr>
+              <% } %>
+          <%  }) %>
+
+          </tbody>
+        </table>
+
+    </div>
+
+  </body>
+</html>
