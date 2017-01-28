@@ -144,7 +144,7 @@ router.post('/replyToSMS', function(req, res, next) {
 
   var body = "Thanks, we've received your message.";
 
-  sendTest(body, from_number);
+  sendText(body, from_number);
 });
 
 /* Querying civiCRM */
