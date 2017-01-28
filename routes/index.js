@@ -134,6 +134,19 @@ router.post('/changepwd', function(req, res, next) {
   });
 });
 
+router.post('/replyToSMS', function(req, res, next) {
+  // Sender's phone number
+  var from_number = req.body.From || req.query.From;
+  // Receiver's phone number - Plivo number
+  var to_number = req.body.To || req.query.To;
+  // The text which was received
+  var text = req.body.Text || req.query.Text;
+
+  var body = "Thanks, we've received your message.";
+
+  sendTest(body, from_number);
+});
+
 /* Querying civiCRM */
 // custom_102 is the field for the name of the elder
 // setInterval takes in a function and a delay
