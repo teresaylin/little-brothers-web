@@ -45,7 +45,7 @@ function sendText(text, phone)
 
 function getElderAddress(name, callback)
 {
-  crmAPI.get('contact', {sort_name: name, return:'street_address, city'},
+  crmAPI.get('contact', {sort_name: name, return:'name, street_address, city'},
     function (result) {
       var address = result.values[0].street_address + ", " + result.values[0].city;
       if (address === ", ") //if both the street address and the city are empty
@@ -201,6 +201,7 @@ router.post('/replyToSMS', function(req, res, next) {
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
+
 // var timer_requests = setInterval(newRequests, 1000*60);
 
 // newRequests();
@@ -246,20 +247,19 @@ UPDATING ACTIVITY STATUS IN CIVI
 SPECIFY ID OF ACTVITY
 CHANGE STATUS ID TO SCHEDULED OR COMPLETED 
 */
-// crmAPI.call('Activity', 'create', {id:'68130', activity_type_id:'Emergency Food Package', status_id:'Available'},
-//   function (result) {
-//     console.log(result);
-// }
-// ); 
 
+// crmAPI.call('Activity', 'create', {id:'68181', status_id:'Available'}, 
+//   function(result) {
+//     console.log(result); 
+//   }); 
 
 /* GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
 Checks every 24 hours
 tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
 
-var timer_volunteers = setInterval(newVolunteers, 1000*60*24);
-newVolunteers();
+
+var timer_volunteers = setInterval(newVolunteers, 1000*60*60*24);
 
 function newVolunteers() {
   crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
@@ -312,5 +312,20 @@ function newAdmins() {
     }
   );
 }
+
+
+//Checking for unscheduled activities and volunteer responses to texts 
+/*
+var timer_noResponse = setInterval(Activity.noResponse, 1000*60*60);
+var timer_checkResends = setInterval(Activity.checkResends, 1000*60*60);
+
+Activity.noResponse(function(data){
+  console.log(data.message);
+}); 
+
+Activity.checkResends(function(data){
+  console.log(data.message);
+}); 
+*/
 
 module.exports = router;

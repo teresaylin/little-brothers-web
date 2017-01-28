@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 var utils = require('./utils');
 var Volunteer = require('../models/volunteer');
+var Admin = require('../models/admin'); 
 
 var activitySchema = new mongoose.Schema({
   activityID: { type: String, required: true, index: { unique: true } },
@@ -34,6 +35,7 @@ activitySchema.statics.newActivity = function(id, elderName, cb) {
     }
   });
 };
+
 
 
 /* Update the activity based on volunteer's action */
@@ -83,6 +85,62 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
     }
   });
 };
+
+
+/* Resends activity */
+
+/* No volunteer response --> send request to staff */
+activitySchema.statics.noResponse = function(cb) {
+  var Activity = this; 
+  Activity.find({'resends': 3}, function(err, act) {
+    if(act.length === 0) {
+      cb({ success: false, phone: "", message: 'No staff needs to be assigned to the request yet'})
+    } else {
+      //sends text to staff for every activity that's been resended 3 times
+      for(var i=0; i<act.length; i++) {
+        var current = act[i];
+        var id = current.activityID;
+        Activity.update({ 'activityID': id },
+          { $set: { 'status': 'Completed' } },
+          function(err, result) {
+            cb({ success: true, message: 'Changing activity status to COMPLETED' });
+          });
+        //Enter phone number of staff member in charge on manual assignment of requests
+        Admin.findOne({'phone': '1234569524'}, function(err, result) {
+          if(result === null) {
+            cb({ success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
+          } else {
+            cb({ success: true, phone: result.phone, message: 'Staff: Jane Doe urgently requires groceries'}); 
+          }
+        })
+      }
+    }
+  }); 
+};
+
+/* No volunteer response and resends less than 3 */
+activitySchema.statics.checkResends = function(cb) {
+  var Activity = this; 
+  Activity.find({'status': 'Available', 'resends': {$lt: 3}}, function(err, act) {
+    if(act.length === 0) {
+      cb({ success: false, message: "no activities with resends less than 3"}); 
+    } else {
+      //increases resend count and sends text to volunteers every hour
+      for(var i=0; i<act.length; i++) {
+        var current = act[i]; 
+        var id = current.activityID; 
+        var resendCount = current.resends; 
+        resendCount = resendCount + 1;
+        Activity.update({ 'activityID': id },
+          { $set: { 'resends': resendCount } },
+          function(err, result) {
+            cb({ success: true, message: 'Volunteers: Jane Doe urgently requires groceries' });
+          }
+        );
+      }
+    }
+  }); 
+}; 
 
 
 Activity = mongoose.model('Activity', activitySchema);
