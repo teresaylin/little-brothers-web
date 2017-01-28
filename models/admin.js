@@ -14,7 +14,6 @@ Adds a new admin, if the admin does not already exist
 */
 adminSchema.statics.addAdmin = function(display_name, phone_num, cb) {
   var Admin = this;
-  console.log(Admin);
   Admin.findOne({ 'name': display_name }, function(err, user) {
     if (user) {
       cb({ success: false, message: 'Admin already exists' });
@@ -39,8 +38,6 @@ adminSchema.statics.addAdmin = function(display_name, phone_num, cb) {
 Removes an admin, if the admin exists
 */
 adminSchema.statics.removeAdmin = function(display_name, cb) {
-  // var Admin = this;
-  // console.log(Admin);
   Admin.remove({'name': display_name}, function(err, user) {
     if (user.result.n !== 0) {
       cb({ success: true, message: 'Admin has been successfully deleted' });

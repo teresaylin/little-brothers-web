@@ -4,14 +4,14 @@ var bcrypt = require('bcrypt');
 var utils = require('./utils');
 
 var volunteerSchema = new mongoose.Schema({
-  name: { type: String, required: true, index: { unique: true } },
+  name: { type: String, required: true },
   phone: { type: String, required: true },
 });
 
 /* Create a new volunteer */
 volunteerSchema.statics.addVolunteer = function(display_name, phone_num, cb) {
   var Volunteer = this;
-  Volunteer.findOne({ 'name': display_name }, function(err, user) {
+  Volunteer.findOne({ 'name': display_name, 'phone': phone_num }, function(err, user) {
     if (user) {
       cb({ success: false, message: 'Volunteer already exists' });
     } else {

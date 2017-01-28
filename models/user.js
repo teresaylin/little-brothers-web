@@ -71,7 +71,7 @@ userSchema.statics.register = function(fullname, username, password, password_co
  *    user: the user object, if success == true
  */
 userSchema.statics.authenticate = function(username, password, cb) {
-  this.findOne({ username: username }, function(err, user) {
+  this.findOne({ 'username': username }, function(err, user) {
     if (user === null) {
       cb({ success: false,
            message: 'Username or password is not correct',
