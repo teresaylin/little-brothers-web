@@ -197,14 +197,12 @@ router.post('/replyToSMS', function(req, res, next) {
 // setInterval takes in a function and a delay
 // delay is in milliseconds (1 sec = 1000 ms)
 
-
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
+var timer_requests = setInterval(newRequests, 1000*60*60);
 
-// var timer_requests = setInterval(newRequests, 1000*60);
-
-// newRequests();
+newRequests();
 
 function newRequests() {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details,id'},
@@ -240,6 +238,14 @@ function newRequests() {
       }
     }
   );
+
+  Activity.noResponse(function(data) {
+    console.log(data.message);
+  });
+
+  Activity.checkResends(function(data){
+    console.log(data.message);
+  });
 }
 
 /*
@@ -257,7 +263,6 @@ CHANGE STATUS ID TO SCHEDULED OR COMPLETED
 Checks every 24 hours
 tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
-
 
 var timer_volunteers = setInterval(newVolunteers, 1000*60*60*24);
 
@@ -290,7 +295,6 @@ function getVolunteerNumbers(callback)
     });
 }
 
-
 /* GET Admins tagged with 'admin'
 Checks every time website is visited
 tag ID of 'admin' is 191
@@ -312,20 +316,5 @@ function newAdmins() {
     }
   );
 }
-
-
-//Checking for unscheduled activities and volunteer responses to texts 
-/*
-var timer_noResponse = setInterval(Activity.noResponse, 1000*60*60);
-var timer_checkResends = setInterval(Activity.checkResends, 1000*60*60);
-
-Activity.noResponse(function(data){
-  console.log(data.message);
-}); 
-
-Activity.checkResends(function(data){
-  console.log(data.message);
-}); 
-*/
 
 module.exports = router;

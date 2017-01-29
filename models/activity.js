@@ -37,7 +37,6 @@ activitySchema.statics.newActivity = function(id, elderName, cb) {
 };
 
 
-
 /* Update the activity based on volunteer's action */
 activitySchema.statics.updateActivity = function(action, elderName, vol_phone, cb) {
   var Activity = this;
@@ -86,24 +85,21 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
   });
 };
 
-
-/* Resends activity */
-
-/* No volunteer response --> send request to staff */
+/* No volunteer response after 3 resends --> send request to staff */
 activitySchema.statics.noResponse = function(cb) {
   var Activity = this; 
-  Activity.find({'resends': 3}, function(err, act) {
+  Activity.find({'resends': 4, 'status': 'Available'}, function(err, act) {
     if(act.length === 0) {
-      cb({ success: false, phone: "", message: 'No staff needs to be assigned to the request yet'})
+      cb({ success: false, phone: "", message: 'No activities need to be sent to Staff.'})
     } else {
-      //sends text to staff for every activity that's been resended 3 times
+      //sends text to staff for every activity that's been resent 3 times
       for(var i=0; i<act.length; i++) {
         var current = act[i];
         var id = current.activityID;
         Activity.update({ 'activityID': id },
-          { $set: { 'status': 'Completed' } },
+          { $set: { 'status': 'Completed', 'volunteer': 'Staff' } },
           function(err, result) {
-            cb({ success: true, message: 'Changing activity status to COMPLETED' });
+            // cb({ success: true, phone: "", message: 'Changing activity status to COMPLETED' });
           });
         //Enter phone number of staff member in charge on manual assignment of requests
         Admin.findOne({'phone': '1234569524'}, function(err, result) {
@@ -118,12 +114,12 @@ activitySchema.statics.noResponse = function(cb) {
   }); 
 };
 
-/* No volunteer response and resends less than 3 */
+/* Resend activities that have not been Scheduled and have not been resent 4 times */
 activitySchema.statics.checkResends = function(cb) {
   var Activity = this; 
-  Activity.find({'status': 'Available', 'resends': {$lt: 3}}, function(err, act) {
+  Activity.find({'status': 'Available', 'resends': {$lt: 4}}, function(err, act) {
     if(act.length === 0) {
-      cb({ success: false, message: "no activities with resends less than 3"}); 
+      cb({ success: false, message: "All activities have been completed or scheduled to Staff"}); 
     } else {
       //increases resend count and sends text to volunteers every hour
       for(var i=0; i<act.length; i++) {
@@ -142,7 +138,5 @@ activitySchema.statics.checkResends = function(cb) {
   }); 
 }; 
 
-
 Activity = mongoose.model('Activity', activitySchema);
-
 module.exports = Activity;
