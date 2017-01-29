@@ -158,7 +158,7 @@ router.get('/logout', function(req, res, next) {
 });
 
 router.post('/plivo', function(req, res, next) {
-  //console.log(req.body);
+  console.log(req.body);
 });
 
 router.post('/sms', function(req, res, next) {
@@ -203,7 +203,7 @@ router.post('/replyToSMS', function(req, res, next) {
   {
     nameInText += splitText[index] + " ";
   }
-  nameInText.substring(0, nameInText.length - 1); //remove last space
+  nameInText = nameInText.substring(0, nameInText.length - 1); //remove last space
   Activity.updateActivity(firstToken, nameInText, phoneNum, function(data) {
     sendText(data.message, from_number);
     if (data.success && data.sendMassText)
