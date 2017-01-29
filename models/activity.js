@@ -37,7 +37,6 @@ activitySchema.statics.newActivity = function(id, elderName, cb) {
 };
 
 
-
 /* Update the activity based on volunteer's action */
 activitySchema.statics.updateActivity = function(action, elderName, vol_phone, cb) {
   var Activity = this;
@@ -46,13 +45,13 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
     if (action === 'accept') {
       Activity.findOne({ 'elderName': elderName, 'status': 'Available' }, function(err, act) {
         if (act === null) {
-          cb({ success: false, message: elderName + 'does not match the name of any elder who currently requires assistance. Someone may have claimed this request before you, or this may be due to a spelling error.' });
+          cb({ success: false, message: elderName + ' does not match the name of any elder who currently requires assistance. Someone may have claimed this request before you, or this may be due to a spelling error.' });
         } else {
           var id = act.activityID;
           Activity.update({ 'activityID': id },
             { $set: { 'status': 'Scheduled', 'volunteer': volunteer.name } },
             function(err, result) {
-              cb({ success: true, message: 'You have been assigned to deliver emergency groceries to ' + elderName + '. Please text \"COMPLETE ' + elderName + '\" upon completion or \"CANCEL ' + elderName + '\" to cancel.' });
+              cb({ success: true, sendMassText: true, message: 'You have been assigned to deliver emergency groceries to ' + elderName + '. Please text \"COMPLETE ' + elderName + '\" upon completion or \"CANCEL ' + elderName + '\" to cancel.' });
           });
         }
       });
@@ -65,7 +64,7 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
           Activity.update({ 'activityID': id },
             { $set: { 'status': 'Completed' } },
             function(err, result) {
-              cb({ success: true, message: 'Thank you for your service!' });
+              cb({ success: true, sendMassText: false, message: 'Thank you for your service! Did you pick up the groceries from the LBFE pantry or purchase them from a grocery store? Please text \"PANTRY\" for pantry or \"PURCHASED\" for store.' });
           });
         }
       });
@@ -78,32 +77,83 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
           Activity.update({ 'activityID': id },
             { $set: { 'status': 'Available', 'volunteer': undefined } },
             function(err, result) {
-              cb({ success: true, message: 'You have cancelled your assignment to deliver emergency grocieries to ' + elderName + '. We hope you are able to donate your time in the future.' });
+              cb({ success: true, sendMassText: false, message: 'You have cancelled your assignment to deliver emergency grocieries to ' + elderName + '. We hope you are able to donate your time in the future.' });
           });
         }
       });
+    } else if (action === 'pantry') {
+      Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': undefined }, function(err, act) {
+        if (act === null) {
+          cb({ success: false, message: 'Invalid input. Please try again.'});
+        } else { //CIVI NEEDS TO BE UPDATED SOMEWHERE IN HERE, and after civi is updated, this row should be deleted
+          var id = act.activityID;
+          Activity.update({ 'activityID': id },
+        { $set: { 'purchased': 'no', 'toReimburse': 'no' } },
+        function(err, result) {
+          cb({ success: true, sendMassText: false, message: 'We have noted that you picked up the groceries from the LBFE pantry. Thank you!'});
+        });
+        }
+      });
+    } else if (action === 'purchased') {
+      Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': undefined }, function(err, act) {
+        if (act === null) {
+          cb({ success: false, message: 'Invalid input. Please try again.'});
+        } else {
+          var id = act.activityID;
+          Activity.update({ 'activityID': id },
+        { $set: { 'purchased': 'yes' } },
+        function(err, result) {
+          cb({ success: true, sendMassText: false, message: 'Would you like to be reimbursed for your purchase? Please text \"YES\" or \"NO\"'});
+        });
+        }
+      });
+    } else if (action === 'yes') {
+      Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': 'yes', 'toReimburse': undefined }, function(err, act) {
+        if (act === null) {
+          cb({ success: false, message: 'Invalid input. Please try again.'});
+        } else { //CIVI NEEDS TO BE UPDATED SOMEWHERE IN HERE, and after civi is updated, this row should be deleted
+          var id = act.activityID;
+          Activity.update({ 'activityID': id },
+        { $set: { 'toReimburse': 'yes' } },
+        function(err, result) {
+          cb({ success: true, sendMassText: false, message: 'We have noted that you are awaiting reimbursement. An LBFE staff member will be in contact with you shortly. Thank you!'});
+        });
+        }
+      });
+    } else if (action === 'no') {
+      Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': 'yes', 'toReimburse': undefined }, function(err, act) {
+        if (act === null) {
+          cb({ success: false, message: 'Invalid input. Please try again.'});
+        } else { //CIVI NEEDS TO BE UPDATED SOMEWHERE IN HERE, and after civi is updated, this row should be deleted
+          var id = act.activityID;
+          Activity.update({ 'activityID': id },
+        { $set: { 'toReimburse': 'no' } },
+        function(err, result) {
+          cb({ success: true, sendMassText: false, message: 'We have noted that you chose to donate your purchased groceries. Thank you!'});
+        });
+        }
+      });
+    } else {
+      cb({ success: false, message: 'Invalid input. Please try again.'});
     }
   });
 };
 
-
-/* Resends activity */
-
-/* No volunteer response --> send request to staff */
+/* No volunteer response after 3 resends --> send request to staff */
 activitySchema.statics.noResponse = function(cb) {
   var Activity = this; 
-  Activity.find({'resends': 3}, function(err, act) {
+  Activity.find({'resends': 4, 'status': 'Available'}, function(err, act) {
     if(act.length === 0) {
-      cb({ success: false, phone: "", message: 'No staff needs to be assigned to the request yet'})
+      cb({ success: false, phone: "", message: 'No activities need to be sent to Staff.'})
     } else {
-      //sends text to staff for every activity that's been resended 3 times
+      //sends text to staff for every activity that's been resent 3 times
       for(var i=0; i<act.length; i++) {
         var current = act[i];
         var id = current.activityID;
         Activity.update({ 'activityID': id },
-          { $set: { 'status': 'Completed' } },
+          { $set: { 'status': 'Completed', 'volunteer': 'Staff' } },
           function(err, result) {
-            cb({ success: true, message: 'Changing activity status to COMPLETED' });
+            // cb({ success: true, phone: "", message: 'Changing activity status to COMPLETED' });
           });
         //Enter phone number of staff member in charge on manual assignment of requests
         Admin.findOne({'phone': '1234569524'}, function(err, result) {
@@ -118,12 +168,12 @@ activitySchema.statics.noResponse = function(cb) {
   }); 
 };
 
-/* No volunteer response and resends less than 3 */
+/* Resend activities that have not been Scheduled and have not been resent 4 times */
 activitySchema.statics.checkResends = function(cb) {
   var Activity = this; 
-  Activity.find({'status': 'Available', 'resends': {$lt: 3}}, function(err, act) {
+  Activity.find({'status': 'Available', 'resends': {$lt: 4}}, function(err, act) {
     if(act.length === 0) {
-      cb({ success: false, message: "no activities with resends less than 3"}); 
+      cb({ success: false, message: "All activities have been completed or scheduled to Staff"}); 
     } else {
       //increases resend count and sends text to volunteers every hour
       for(var i=0; i<act.length; i++) {
@@ -142,7 +192,5 @@ activitySchema.statics.checkResends = function(cb) {
   }); 
 }; 
 
-
 Activity = mongoose.model('Activity', activitySchema);
-
 module.exports = Activity;
