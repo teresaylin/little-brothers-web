@@ -198,7 +198,7 @@ router.post('/replyToSMS', function(req, res, next) {
   var firstToken = splitText[0].toLowerCase();
   var phoneNum = from_number.substring(1);
 
-  var nameInText;
+  var nameInText = "";
   for (var index = 1; index < splitText.length; index++) //handles names that are more than two tokens, and ensures that just "purchase", "yes", etc. won't throw index out of bound error
   {
     nameInText += splitText[index] + " ";
@@ -251,7 +251,7 @@ function newRequests() {
             message = message + "Reply \"ACCEPT " + name + "\" to accept this request."
             console.log(message);
             getVolunteerNumbers(function(numberString) {
-              sendText(message, numberString);
+              //sendText(message, numberString);
             });
           });
 

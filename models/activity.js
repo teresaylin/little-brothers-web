@@ -45,7 +45,7 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
     if (action === 'accept') {
       Activity.findOne({ 'elderName': elderName, 'status': 'Available' }, function(err, act) {
         if (act === null) {
-          cb({ success: false, message: elderName + ' does not match the name of any elder who currently requires assistance. Someone may have claimed this request before you, or this may be due to a spelling error.' });
+          cb({ success: false, message: '\"' + elderName + '\" does not match the name of any elder who currently requires assistance. Someone may have claimed this request before you, or this may be due to a spelling error.' });
         } else {
           var id = act.activityID;
           Activity.update({ 'activityID': id },
