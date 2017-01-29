@@ -291,14 +291,48 @@ function newRequests() {
 
 /*
 UPDATING ACTIVITY STATUS IN CIVI
-SPECIFY ID OF ACTVITY
-CHANGE STATUS ID TO SCHEDULED OR COMPLETED 
+Needs to be called by something else (or can be put on timer and tweaked)
 */
-
-// crmAPI.call('Activity', 'create', {id:'68181', status_id:'Available'}, 
-//   function(result) {
-//     console.log(result); 
-//   }); 
+function updateCivi(elderName, volunteer, purchased, toReimburse) {
+  crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id: 'Available', return:'id,details,custom_102'},
+    function (result) {
+      if (typeof result.values != 'undefined')
+      {
+        for (var i in result.values)
+        {
+          var val = result.values[i];
+          if (val.custom_102 === elderName)
+          {
+            var newDetails = val.details + "\n" + volunteer + " completed this task; they "
+            if (purchased === "yes")
+            {
+              newDetails += "purchased groceries themself and would ";
+              if (toReimburse === "no")
+              {
+                newDetails += "not ";
+              }
+              newDetails += "like to be reimbursed.";
+            }
+            else
+            {
+              newDetails += "picked up groceries from the LBFE pantry.";
+            }
+            crmAPI.call('Activity', 'create', {id: val.id, status_id:'Completed', details: newDetails}, 
+              function(result) {
+                console.log(result); 
+              }
+            );
+            break;
+          }
+        }
+      }
+      else
+      {
+        console.log("Activity not found.");
+      }
+    }
+  );
+}
 
 /* GET volunteers tagged with 'Emergency Food Package Volunteer': Name, Phone Number
 Checks every 24 hours

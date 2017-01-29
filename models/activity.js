@@ -194,5 +194,15 @@ activitySchema.statics.checkResends = function(cb) {
   }); 
 };
 
+activitySchema.statics.removeActivity = function(id, cb) {
+  Activity.remove({'activityId': id}, function(err, act) {
+    if (act.result.n !== 0) {
+      cb({ success: true, message: 'Activity has been successfully deleted' });
+    } else {
+      cb({ success: false, message: 'Activity does not exist' });
+    }
+  });
+};
+
 Activity = mongoose.model('Activity', activitySchema);
 module.exports = Activity;
