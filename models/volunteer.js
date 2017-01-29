@@ -41,6 +41,21 @@ volunteerSchema.statics.removeVolunteer = function(display_name, cb) {
   });
 };
 
+/* Get Volunteer numbers */
+volunteerSchema.statics.getNumbers = function(cb) {
+  var Volunteer = this;
+  var phoneNumbers = [];
+  Volunteer.find({}, function(err, user) {
+    if (user) {
+      for (var i=0; i<user.length; i++) {
+        phoneNumbers.push(user[i].phone);
+      }
+      cb({ success: true, numbers: phoneNumbers, message: ''});
+    } else {
+      cb({ success: false, numbers: '', message: 'No volunteer numbers found'});
+    }
+  });
+}
 
 Volunteer = mongoose.model('Volunteer', volunteerSchema);
 
