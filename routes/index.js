@@ -141,7 +141,7 @@ router.get('/logout', function(req, res, next) {
 });
 
 router.post('/plivo', function(req, res, next) {
-  console.log(req.body);
+  //console.log(req.body);
 });
 
 router.post('/sms', function(req, res, next) {
@@ -176,20 +176,30 @@ router.post('/replyToSMS', function(req, res, next) {
   var text = req.body.Text || req.query.Text;
 
   var body;
+
   var splitText = text.split(" ");
   var firstToken = splitText[0].toLowerCase();
   var phoneNum = from_number.substring(1);
 
-  if (firstToken === "accept" || firstToken === "complete" || firstToken === "cancel") {
-    var nameInText = splitText[1] + ' ' + splitText[2];
-    Activity.updateActivity(firstToken, nameInText, phoneNum, function(data) {
-      sendText(data.message, from_number);
-    });
-  } else {
-    body = "Invalid input. Please try again.";
+  var nameInText;
+  for (var index = 1; index < splitText.length; index++) //handles names that are more than two tokens, and ensures that just "purchase", "yes", etc. won't throw index out of bound error
+  {
+    nameInText += splitText[index] + " ";
   }
-  
-  // sendText(body, from_number);
+  nameInText.substring(0, nameInText.length - 1); //remove last space
+  Activity.updateActivity(firstToken, nameInText, phoneNum, function(data) {
+    sendText(data.message, from_number);
+    if (data.success && data.sendMassText)
+    {
+      getVolunteerNumbers(function(numberString) {
+        message = "Resolved: Another volunteer has been assigned to provide emergency groceries for " + nameInText + ". They no longer require assistance."
+        numbers = numberString.replace(from_number + "<", ''); //handles case where phone number is first or in the middle
+        numbers = numbers.replace("<" + from_number, ''); //handles case where phone number is at end
+        sendText(message, numbers);
+      });
+    }
+  });
+
 });
 
 /* Querying civiCRM */
@@ -291,6 +301,7 @@ function getVolunteerNumbers(callback)
         }
       }
       numberString = numberString.substring(0, numberString.length - 1) //removing extraneous "<" character at end
+      numberString = numberString.replace(/-|\.|\(|\)/g, ""); //getting rid of delimiters that will mess with plivo
       callback(numberString);
     });
 }
