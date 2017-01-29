@@ -65,11 +65,27 @@ router.get('/volunteers', function (req, res, next) {
       if (err) {
           throw Error;
       }
-      res.render('volunteers', {volunteers: volunteers, user:user});
+      res.render('volunteers', {user:user, volunteers: volunteers, message: ''});
     });
   } else { //redirect to login in page if not logged in
     res.redirect('/login');
   }
+  
+});
+
+router.post('/delete', function(req, res, next) {
+  var volunteerName = req.body.volunteer_name;
+  var user = req.session.currentUser;
+  Volunteer.removeVolunteer(volunteerName, function(data) {
+    console.log(data.message);
+    var query = Volunteer.find({});
+    query.exec(function (err, volunteers) {
+      if (err) {
+          throw Error;
+      }
+      res.render('volunteers', {user:user, volunteers: volunteers, message: data.message });
+    });
+  });  
   
 });
 
@@ -88,6 +104,7 @@ router.get('/activities', function (req, res, next) {
     res.redirect('/login');
   }
 });
+
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -141,7 +158,7 @@ router.get('/logout', function(req, res, next) {
 });
 
 router.post('/plivo', function(req, res, next) {
-  console.log(req.body);
+  //console.log(req.body);
 });
 
 router.post('/sms', function(req, res, next) {
@@ -176,20 +193,30 @@ router.post('/replyToSMS', function(req, res, next) {
   var text = req.body.Text || req.query.Text;
 
   var body;
+
   var splitText = text.split(" ");
   var firstToken = splitText[0].toLowerCase();
   var phoneNum = from_number.substring(1);
 
-  if (firstToken === "accept" || firstToken === "complete" || firstToken === "cancel") {
-    var nameInText = splitText[1] + ' ' + splitText[2];
-    Activity.updateActivity(firstToken, nameInText, phoneNum, function(data) {
-      sendText(data.message, from_number);
-    });
-  } else {
-    body = "Invalid input. Please try again.";
+  var nameInText;
+  for (var index = 1; index < splitText.length; index++) //handles names that are more than two tokens, and ensures that just "purchase", "yes", etc. won't throw index out of bound error
+  {
+    nameInText += splitText[index] + " ";
   }
-  
-  // sendText(body, from_number);
+  nameInText.substring(0, nameInText.length - 1); //remove last space
+  Activity.updateActivity(firstToken, nameInText, phoneNum, function(data) {
+    sendText(data.message, from_number);
+    if (data.success && data.sendMassText)
+    {
+      getVolunteerNumbers(function(numberString) {
+        message = "Resolved: Another volunteer has been assigned to provide emergency groceries for " + nameInText + ". They no longer require assistance."
+        numbers = numberString.replace(from_number + "<", ''); //handles case where phone number is first or in the middle
+        numbers = numbers.replace("<" + from_number, ''); //handles case where phone number is at end
+        sendText(message, numbers);
+      });
+    }
+  });
+
 });
 
 /* Querying civiCRM */
@@ -197,14 +224,12 @@ router.post('/replyToSMS', function(req, res, next) {
 // setInterval takes in a function and a delay
 // delay is in milliseconds (1 sec = 1000 ms)
 
-
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
+var timer_requests = setInterval(newRequests, 1000*60*60);
 
-// var timer_requests = setInterval(newRequests, 1000*60);
-
-// newRequests();
+newRequests();
 
 function newRequests() {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details,id'},
@@ -240,6 +265,14 @@ function newRequests() {
       }
     }
   );
+
+  Activity.noResponse(function(data) {
+    console.log(data.message);
+  });
+
+  Activity.checkResends(function(data){
+    console.log(data.message);
+  });
 }
 
 /*
@@ -258,7 +291,6 @@ Checks every 24 hours
 tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
 
-
 var timer_volunteers = setInterval(newVolunteers, 1000*60*60*24);
 
 function newVolunteers() {
@@ -275,7 +307,7 @@ function newVolunteers() {
 
 function getVolunteerNumbers(callback)
 {
-	crmAPI.get('contact', {tag:'190', return:'phone'},
+  crmAPI.get('contact', {tag:'190', return:'phone'},
     function (result) {
       var numberString = "";
       for (var i in result.values) {
@@ -286,10 +318,10 @@ function getVolunteerNumbers(callback)
         }
       }
       numberString = numberString.substring(0, numberString.length - 1) //removing extraneous "<" character at end
+      numberString = numberString.replace(/-|\.|\(|\)/g, ""); //getting rid of delimiters that will mess with plivo
       callback(numberString);
     });
 }
-
 
 /* GET Admins tagged with 'admin'
 Checks every time website is visited
@@ -312,20 +344,5 @@ function newAdmins() {
     }
   );
 }
-
-
-//Checking for unscheduled activities and volunteer responses to texts 
-/*
-var timer_noResponse = setInterval(Activity.noResponse, 1000*60*60);
-var timer_checkResends = setInterval(Activity.checkResends, 1000*60*60);
-
-Activity.noResponse(function(data){
-  console.log(data.message);
-}); 
-
-Activity.checkResends(function(data){
-  console.log(data.message);
-}); 
-*/
 
 module.exports = router;

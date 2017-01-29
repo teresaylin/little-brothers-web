@@ -12,26 +12,38 @@
     <% include partials/navbar_logged_in %>
 
     <div class="puddle-container">
-
-        <table class="table table-striped col-md-4">
-          <thead>
+      <form class="form-group puddle-form" action="/delete" method="post">
+        <table>
           <tr>
-          <th>Volunteer Name</th>
-          <th>Volunteer Phone Number</th>
+            <td><label>Volunteer to delete</label></td>
+            <td><input type="text" class="form-control" name="volunteer_name" placeholder="Volunteer name"></td>
           </tr>
-          </thead>
-          <tbody>
-          <% volunteers.forEach(function(volunteer){ %>
-
-              <tr>
-                  <td><%= volunteer.name %></td>
-                  <td><%= volunteer.phone %></td>
-              </tr>
-
-          <%  }) %>
-
-          </tbody>
+          <tr>
+            <td> <p class="warning"><%= message %></p></td>
+          </tr>
         </table>
+        <button class="btn btn-default" type="submit">Delete</button>
+      </form>
+
+      <table class="table table-striped col-md-4">
+        <thead>
+        <tr>
+        <th>Volunteer Name</th>
+        <th>Volunteer Phone Number</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% volunteers.forEach(function(volunteer){ %>
+
+            <tr>
+                <td><%= volunteer.name %></td>
+                <td><%= volunteer.phone %></td>
+            </tr>
+
+        <%  }) %>
+
+        </tbody>
+      </table>
 
     </div>
 

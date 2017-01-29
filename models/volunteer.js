@@ -31,6 +31,15 @@ volunteerSchema.statics.addVolunteer = function(display_name, phone_num, cb) {
 };
 
 /* Remove a volunteer */
+volunteerSchema.statics.removeVolunteer = function(display_name, cb) {
+  Volunteer.remove({'name': display_name}, function(err, user) {
+    if (user.result.n !== 0) {
+      cb({ success: true, message: 'Volunteer has been successfully deleted' });
+    } else {
+      cb({ success: false, message: 'Volunteer does not exist' });
+    }
+  });
+};
 
 
 Volunteer = mongoose.model('Volunteer', volunteerSchema);
