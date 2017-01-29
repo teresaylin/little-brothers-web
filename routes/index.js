@@ -25,6 +25,8 @@ var p = plivo.RestAPI({
   authToken: process.env.PLIVO_AUTHTOK
 });
 
+var volPhoneNums; 
+
 // Send an SMS through Plivo
 function sendText(text, phone)
 {
@@ -180,7 +182,7 @@ router.post('/sms', function(req, res, next) {
   var message = req.body.text_message;
   var phone = req.body.phone_num;
   var user = req.session.currentUser;
-  sendText(message, phone);  
+  //sendText(message, phone);  
   res.render('home', {user:user});
 });
 
@@ -220,14 +222,14 @@ router.post('/replyToSMS', function(req, res, next) {
   }
   nameInText = nameInText.substring(0, nameInText.length - 1); //remove last space
   Activity.updateActivity(firstToken, nameInText, phoneNum, function(data) {
-    sendText(data.message, from_number);
+    //sendText(data.message, from_number);
     if (data.success && data.sendMassText)
     {
       getVolunteerNumbers(function(numberString) {
         message = "Resolved: Another volunteer has been assigned to provide emergency groceries for " + nameInText + ". They no longer require assistance."
         numbers = numberString.replace(from_number + "<", ''); //handles case where phone number is first or in the middle
         numbers = numbers.replace("<" + from_number, ''); //handles case where phone number is at end
-        sendText(message, numbers);
+        //sendText(message, numbers);
       });
     }
   });
@@ -238,6 +240,7 @@ router.post('/replyToSMS', function(req, res, next) {
 // custom_102 is the field for the name of the elder
 // setInterval takes in a function and a delay
 // delay is in milliseconds (1 sec = 1000 ms)
+
 
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
@@ -264,9 +267,9 @@ function newRequests() {
               message = message + "Additional details: " + additionalDetails + " ";
             }
             message = message + "Reply \"ACCEPT " + name + "\" to accept this request."
-            console.log(message);
+            //console.log(message);
             getVolunteerNumbers(function(numberString) {
-              sendText(message, numberString);
+              //sendText(message, numberString);
             });
 
             Activity.newActivity(activityID, val.custom_102, address, function(data) {
@@ -277,17 +280,26 @@ function newRequests() {
       } else {
         console.log("No available emergency food requests at this time.");
       }
-    }
-  );
+      
+    }); 
+}; 
 
-  Activity.noResponse(function(data) {
-    console.log(data.message);
-  });
+/* Checks for unscheduled activities and lack of volunteer responses to requests*/
+Activity.noResponse(function(data) {
+  if(data.success){
+      sendText(data.message, data.phone); 
+  }
+}); 
 
-  Activity.checkResends(function(data){
-    console.log(data.message);
-  });
-}
+Activity.checkResends(function(data){
+  if(data.success) {
+      getVolunteerNumbers(function(callback) {
+        volPhoneNums = callback; 
+        //Put this here because of asynchronous calls
+        sendText(data.message, volPhoneNums); 
+      })
+  }
+}); 
 
 /*
 UPDATING ACTIVITY STATUS IN CIVI
@@ -339,6 +351,8 @@ Checks every 24 hours
 tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
 
+//newVolunteers(); 
+
 var timer_volunteers = setInterval(newVolunteers, 1000*60*60*24);
 
 function newVolunteers() {
@@ -353,9 +367,6 @@ function newVolunteers() {
     });
 }
 
-getVolunteerNumbers(function(callback) {
-  console.log(callback);
-})
 
 function getVolunteerNumbers(callback)
 {
@@ -386,6 +397,7 @@ function formatPlivoNumber(numbersList, cb) {
 Checks every time website is visited
 tag ID of 'admin' is 191
 should return Teresa, Kristy, Stuti, Shana, Cynthia */
+
 
 // newAdmins();
 

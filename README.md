@@ -1,12 +1,20 @@
-# little-brothers-web
+# Little-Brothers-Web
 Web server for Little Brothers
 
-Create a .env file in your project directory, with the following info:
-LB_URL='http://example.com'
-LB_API_KEY='blah'
-LB_KEY='blah'
-PLIVO_AUTHID='authid'
-PLIVO_AUTHTOK='authtoken'
-PLIVO_NUMBER='Plivo phone number with country code'
+*Introduction
+*Requirements
 
-Add .env to your .gitignore
+
+Introduction
+
+
+
+Create a .env file in your project directory, with the following information:
+LB_URL='http://example.com'
+LB_API_KEY='your api key'
+LB_KEY='your site key'
+PLIVO_AUTHID='your authid'
+PLIVO_AUTHTOK='your authtoken'
+PLIVO_NUMBER='your Plivo phone number with country code'
+
+Add .env to your .gitignore file 

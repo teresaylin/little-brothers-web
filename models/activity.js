@@ -141,6 +141,8 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
   });
 };
 
+
+
 /* No volunteer response after 3 resends --> send request to staff */
 activitySchema.statics.noResponse = function(cb) {
   var Activity = this; 
@@ -152,17 +154,21 @@ activitySchema.statics.noResponse = function(cb) {
       for(var i=0; i<act.length; i++) {
         var current = act[i];
         var id = current.activityID;
+        var eldername = current.elderName; 
+        var elderAddress = current.elderAddress; 
         Activity.update({ 'activityID': id },
           { $set: { 'status': 'Completed', 'volunteer': 'Staff' } },
           function(err, result) {
             // cb({ success: true, phone: "", message: 'Changing activity status to COMPLETED' });
           });
         //Enter phone number of staff member in charge on manual assignment of requests
-        Admin.findOne({'phone': '1234569524'}, function(err, result) {
+        var staffPhone = '14089159524'; 
+        modifiedStaffPhone =  staffPhone.substring(1); 
+        Admin.findOne({'phone': modifiedStaffPhone}, function(err, result) {
           if(result === null) {
             cb({ success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
           } else {
-            cb({ success: true, phone: result.phone, message: 'Staff: Jane Doe urgently requires groceries'}); 
+            cb({ success: true, phone: staffPhone, message: 'Staff: No Volunteers have accepted a recent emergency food request. ' + eldername + ' at ' + elderAddress + ' urgently requires groceries.'}); 
           }
         })
       }
@@ -171,22 +177,24 @@ activitySchema.statics.noResponse = function(cb) {
 };
 
 /* Resend activities that have not been Scheduled and have not been resent 4 times */
-activitySchema.statics.checkResends = function(cb) {
+activitySchema.statics.checkResends = function(cb) { 
   var Activity = this; 
   Activity.find({'status': 'Available', 'resends': {$lt: 4}}, function(err, act) {
     if(act.length === 0) {
       cb({ success: false, message: "All activities have been completed or scheduled to Staff"}); 
     } else {
-      //increases resend count and sends text to volunteers every hour
+      //increases resend count and sends text to volunteers every hour 
       for(var i=0; i<act.length; i++) {
         var current = act[i]; 
         var id = current.activityID; 
+        var eldername = current.elderName; 
+        var elderAddress = current.elderAddress; 
         var resendCount = current.resends; 
         resendCount = resendCount + 1;
         Activity.update({ 'activityID': id },
           { $set: { 'resends': resendCount } },
           function(err, result) {
-            cb({ success: true, message: 'Volunteers: Jane Doe urgently requires groceries' });
+            cb({ success: true, message: 'New Emergency Food Request: ' + eldername + ' at ' + elderAddress + ' urgently requires groceries.' }); 
           }
         );
       }
