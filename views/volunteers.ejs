@@ -12,17 +12,30 @@
     <% include partials/navbar_logged_in %>
 
     <div class="puddle-container">
+      <form class="form-group puddle-form" action="/addVolunteer" method="post">
+        <table>
+          <tr>
+            <td><label>Volunteer to add</label></td>
+            <td><input type="text" class="form-control" name="volunteer_name" placeholder="Volunteer name"></td>
+            <td><input type="text" class="form-control" name="volunteer_phone" placeholder="10-digit phone number"></td>
+          </tr>
+        </table>
+        <button class="btn btn-default" type="submit">Add</button>
+      </form>
+
       <form class="form-group puddle-form" action="/delete" method="post">
         <table>
           <tr>
             <td><label>Volunteer to delete</label></td>
             <td><input type="text" class="form-control" name="volunteer_name" placeholder="Volunteer name"></td>
-          </tr>
+          </tr>      
+        </table>
+        <button class="btn btn-default" type="submit">Delete</button>
+        <table>
           <tr>
             <td> <p class="warning"><%= message %></p></td>
           </tr>
         </table>
-        <button class="btn btn-default" type="submit">Delete</button>
       </form>
 
       <table class="table table-striped col-md-4">

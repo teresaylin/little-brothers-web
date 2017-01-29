@@ -83,10 +83,25 @@ router.post('/delete', function(req, res, next) {
       if (err) {
           throw Error;
       }
-      res.render('volunteers', {user:user, volunteers: volunteers, message: data.message });
+      res.render('volunteers', {user:user, volunteers: volunteers, message: data.message,});
+    });
+  });
+});
+
+router.post('/addVolunteer', function(req, res, next) {
+  var volunteerName = req.body.volunteer_name;
+  var volunteerPhone = req.body.volunteer_phone;
+  var user = req.session.currentUser;
+  Volunteer.addVolunteer(volunteerName, volunteerPhone, function(data) {
+    console.log(data.message);
+    var query = Volunteer.find({});
+    query.exec(function (err, volunteers) {
+      if (err) {
+          throw Error;
+      }
+      res.render('volunteers', {user:user, volunteers: volunteers, message: data.message});
     });
   });  
-  
 });
 
 router.get('/activities', function (req, res, next) {
