@@ -7,15 +7,16 @@ var Admin = require('../models/admin');
 var activitySchema = new mongoose.Schema({
   activityID: { type: String, required: true, index: { unique: true } },
   elderName: { type: String, required: true },
-  status: { type: String, default: 'Available', required: true },
+  elderAddress: { type: String, required: true },
   volunteer: { type: String, required: false, ref: 'volunteerSchema' },
+  status: { type: String, default: 'Available', required: true },
   resends: { type: Number, default: 1, required: true },
   purchased: { type: String },
   toReimburse: { type: String }
 });
 
 /* Create an entry for a new Emergency Food Package activity */
-activitySchema.statics.newActivity = function(id, elderName, cb) {
+activitySchema.statics.newActivity = function(id, elderName, elderAddress, cb) {
   var Activity = this;
   Activity.findOne({ 'activityID': id }, function(err, act) { 
     if (act) {
@@ -24,6 +25,7 @@ activitySchema.statics.newActivity = function(id, elderName, cb) {
       var new_act = new Activity({
         activityID: id,
         elderName: elderName,
+        elderAddress: elderAddress
       });
       new_act.save(function(err) {
         if (err) {

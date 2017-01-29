@@ -10,7 +10,22 @@
   <body>
 
     <% include partials/navbar_logged_in %>
+
     <div class = "container-fluid"> 
+      <br>
+
+      <div class="container"> 
+        <form class="form-inline" action="/addVolunteer" method="post">
+          <div class="form-group">
+            <label>Volunteer to add</label>
+            <input type="text" class="form-control" name="volunteer_name" placeholder="Volunteer name">
+            <input type="text" class="form-control" name="volunteer_phone" placeholder="10-digit phone number">
+          </div>
+          
+          <button type="submit" class="btn btn-danger">Add</button>
+        </form>
+        <p class="warning"><%= message %></p>
+      </div>
       <br>
       <div class="container"> 
         <form class="form-inline" action="/delete" method="post">
@@ -23,29 +38,32 @@
         </form>
         <p class="warning"><%= message %></p>
       </div>
+
       <br>
+
       <div class="container"> 
         <table class="table table-striped col-md-4">
           <thead>
-            <tr>
-            <th>Volunteer Name</th>
-            <th>Volunteer Phone Number</th>
-            </tr>
+          <tr>
+          <th>Volunteer Name</th>
+          <th>Volunteer Phone Number</th>
+          </tr>
           </thead>
-          
           <tbody>
-            <% volunteers.forEach(function(volunteer){ %>
 
-                <tr>
-                    <td><%= volunteer.name %></td>
-                    <td><%= volunteer.phone %></td>
-                </tr>
+              <% volunteers.forEach(function(volunteer){ %>
 
-            <%  }) %>
+                  <tr>
+                      <td><%= volunteer.name %></td>
+                      <td><%= volunteer.phone %></td>
+                  </tr>
 
-          </tbody>
-        </table>
+              <%  }) %>
+
+            </tbody>
+          </table>
       </div>
+
     </div>
 
 
