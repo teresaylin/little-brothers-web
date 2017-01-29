@@ -251,7 +251,7 @@ function newRequests() {
             message = message + "Reply \"ACCEPT " + name + "\" to accept this request."
             console.log(message);
             getVolunteerNumbers(function(numberString) {
-              //sendText(message, numberString);
+              sendText(message, numberString);
             });
           });
 
