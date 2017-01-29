@@ -192,7 +192,7 @@ activitySchema.statics.checkResends = function(cb) {
       }
     }
   }); 
-}; 
+};
 
 Activity = mongoose.model('Activity', activitySchema);
 module.exports = Activity;

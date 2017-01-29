@@ -242,9 +242,9 @@ router.post('/replyToSMS', function(req, res, next) {
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
-var timer_requests = setInterval(newRequests, 1000*60*60);
+// var timer_requests = setInterval(newRequests, 1000*60*60);
 
-newRequests();
+// newRequests();
 
 function newRequests() {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details,id'},
@@ -319,30 +319,41 @@ function newVolunteers() {
     });
 }
 
+getVolunteerNumbers(function(callback) {
+  console.log(callback);
+})
+
 function getVolunteerNumbers(callback)
 {
-  crmAPI.get('contact', {tag:'190', return:'phone'},
-    function (result) {
-      var numberString = "";
-      for (var i in result.values) {
-        var number = result.values[i].phone;
-        if (!(number === "")) //only add number if there is actually a number in the database
-        {
-          numberString += "1" + number + "<"; //Plivo requires < delimiter between different phone numbers; also assuming that volunteer lives in US
-        }
-      }
-      numberString = numberString.substring(0, numberString.length - 1) //removing extraneous "<" character at end
-      numberString = numberString.replace(/-|\.|\(|\)/g, ""); //getting rid of delimiters that will mess with plivo
-      callback(numberString);
-    });
+  Volunteer.getNumbers(function(data) {
+    if (data.success) {
+      var volunteerNumbers = data.numbers;
+      formatPlivoNumber(volunteerNumbers, function(numberString) {
+        callback(numberString);
+      });
+    } else {
+      callback('');
+    }
+  })
 }
+
+function formatPlivoNumber(numbersList, cb) {
+  var numberString = "";
+  for (var i=0; i < numbersList.length; i++) {
+    numberString += "1" + numbersList[i] + "<";
+  }
+  numberString = numberString.substring(0, numberString.length - 1) //removing extraneous "<" character at end
+  numberString = numberString.replace(/-|\.|\(|\)/g, ""); //getting rid of delimiters that will mess with plivo
+  cb(numberString);
+}
+
 
 /* GET Admins tagged with 'admin'
 Checks every time website is visited
 tag ID of 'admin' is 191
 should return Teresa, Kristy, Stuti, Shana, Cynthia */
 
-newAdmins();
+// newAdmins();
 
 function newAdmins() {
   crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
