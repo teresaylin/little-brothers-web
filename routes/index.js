@@ -253,11 +253,10 @@ function newRequests() {
             getVolunteerNumbers(function(numberString) {
               sendText(message, numberString);
             });
-          });
 
-          // Adding request to db if it has not been added
-          Activity.newActivity(activityID, val.custom_102, function(data) {
-            console.log(data.message);
+            Activity.newActivity(activityID, val.custom_102, address, function(data) {
+              console.log(data.message);
+            });
           });
         }
       } else {
