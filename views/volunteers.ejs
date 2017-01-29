@@ -10,42 +10,44 @@
   <body>
 
     <% include partials/navbar_logged_in %>
-
-    <div class="puddle-container">
-      <form class="form-group puddle-form" action="/delete" method="post">
-        <table>
-          <tr>
-            <td><label>Volunteer to delete</label></td>
-            <td><input type="text" class="form-control" name="volunteer_name" placeholder="Volunteer name"></td>
-          </tr>
-          <tr>
-            <td> <p class="warning"><%= message %></p></td>
-          </tr>
-        </table>
-        <button class="btn btn-default" type="submit">Delete</button>
-      </form>
-
-      <table class="table table-striped col-md-4">
-        <thead>
-        <tr>
-        <th>Volunteer Name</th>
-        <th>Volunteer Phone Number</th>
-        </tr>
-        </thead>
-        <tbody>
-        <% volunteers.forEach(function(volunteer){ %>
-
+    <div class = "container-fluid"> 
+      <br>
+      <div class="container"> 
+        <form class="form-inline" action="/delete" method="post">
+          <div class="form-group">
+            <label>Volunteer to delete</label>
+            <input type="text" class="form-control" name="volunteer_name" placeholder="Volunteer name">
+          </div>
+          
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+        <p class="warning"><%= message %></p>
+      </div>
+      <br>
+      <div class="container"> 
+        <table class="table table-striped col-md-4">
+          <thead>
             <tr>
-                <td><%= volunteer.name %></td>
-                <td><%= volunteer.phone %></td>
+            <th>Volunteer Name</th>
+            <th>Volunteer Phone Number</th>
             </tr>
+          </thead>
+          
+          <tbody>
+            <% volunteers.forEach(function(volunteer){ %>
 
-        <%  }) %>
+                <tr>
+                    <td><%= volunteer.name %></td>
+                    <td><%= volunteer.phone %></td>
+                </tr>
 
-        </tbody>
-      </table>
+            <%  }) %>
 
+          </tbody>
+        </table>
+      </div>
     </div>
+
 
   </body>
 </html>
