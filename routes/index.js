@@ -56,7 +56,7 @@ Output:
 -name is the exact same String as the parameter name. This needs to be passed into the callback to ensure that asynchronous calls don't mess up future outputs.
 -address is the address that has been retrieved from Civi, in the format "street address, city" (or "(NO ADDRESS PROVIDED)" if there is no address in Civi for the elder)
 */
-function getElderAddress(name, callback)
+function getElderAddress(name, id, callback)
 {
   crmAPI.get('contact', {sort_name: name, return:'name, street_address, city'},
     function (result) {
@@ -65,7 +65,7 @@ function getElderAddress(name, callback)
       {
         address = "(NO ADDRESS PROVIDED)"
       }
-      callback(name, address);
+      callback(name, address, id);
     }
   );
 }
@@ -256,7 +256,7 @@ router.post('/replyToSMS', function(req, res, next) {
 
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
-var timer_requests = setInterval(newRequests, 1000*60*3);
+var timer_requests = setInterval(newRequests, 1000*60*2);
 
 newRequests();
 
@@ -268,9 +268,8 @@ function newRequests() {
       if (typeof result.values != 'undefined') {
         for (var i in result.values) {
           var val = result.values[i];
-          var activityID = val.id;
 
-          getElderAddress(val.custom_102, function(name, address) {
+          getElderAddress(val.custom_102, val.id, function(name, address, id) {
             var message = "New Emergency Food Request: " + name + " at " + address + " urgently requires groceries. ";
             if (typeof val.details != "undefined")
             {
@@ -280,10 +279,11 @@ function newRequests() {
             }
             message = message + "Reply \"ACCEPT " + name + "\" to accept this request."
             getVolunteerNumbers(function(numberString) {
-              sendText(message, numberString);
+              // sendText(message, numberString);
+              console.log(message);
             });
 
-            Activity.newActivity(activityID, val.custom_102, address, function(data) {
+            Activity.newActivity(id, name, address, function(data) {
               console.log(data.message);
             });
           });
@@ -300,17 +300,24 @@ var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60);
 function checkUnscheduled() {
   Activity.noResponse(function(data) {
     if(data.success){
-        sendText(data.message, data.phone);
-        removeCompleted();
+      var noResAct = data.noResponseAct;
+      for (var i in noResAct) {
+        var message = 'Staff: No volunteers have accepted a recent emergency food request. ' + noResAct[i].elderName + ' at ' + noResAct[i].elderAddress + ' urgently requires groceries.';
+        sendText(message, data.phone);
+      }
+      removeCompleted();
     }
   });
   Activity.checkResends(function(data){
     if(data.success) {
         var volPhoneNums;
+        var resAct = data.resendActivities;
         getVolunteerNumbers(function(callback) {
-          volPhoneNums = callback; 
-          //Put this here because of asynchronous calls
-          sendText(data.message, volPhoneNums); 
+          volPhoneNums = callback;
+          for (var i in resAct) {
+            var message = '' + (resAct[i].resends+1) + '. Urgent Emergency Food Request: ' + resAct[i].elderName + ' at ' + resAct[i].elderAddress + ' urgently requires groceries.';
+            sendText(message, volPhoneNums);
+          }
         });
     }
   });
@@ -322,7 +329,8 @@ var timer_checkScheduled = setInterval(checkScheduled, 1000*60);
 function checkScheduled() {
   Activity.checkActivityCompletion(function(data) {
     if(data.success) {
-      sendText(data.message, data.phone);   
+      // sendText(data.message, data.phone);
+      console.log(data.message);
     }
   }); 
 }
@@ -336,41 +344,34 @@ Input:
 Output:
 -no returns; just updates CiviCRM, replacing the old request (with status "available") with a new request (with status "completed" and more details) that has all other information the same
 */
-function updateCivi(elderName, volunteer, purchased, toReimburse) {
+function updateCivi(id, elderName, volunteer, purchased, toReimburse, callback) {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id: 'Available', return:'id,details,custom_102'},
     function (result) {
-      if (typeof result.values != 'undefined')
-      {
-        for (var i in result.values)
-        {
+      if (typeof result.values != 'undefined') {
+        for (var i in result.values) {
           var val = result.values[i];
-          if (val.custom_102 === elderName)
-          {
+          if (val.custom_102 === elderName) {
             var newDetails = val.details + "\n" + volunteer + " completed this task; they "
-            if (purchased === "yes")
-            {
+            if (purchased === "yes") {
               newDetails += "purchased groceries themselves and would ";
-              if (toReimburse === "no")
-              {
+              if (toReimburse === "no") {
                 newDetails += "not ";
               }
               newDetails += "like to be reimbursed.";
-            }
-            else
-            {
+            } else {
               newDetails += "picked up groceries from the LBFE pantry.";
             }
             crmAPI.call('Activity', 'create', {id: val.id, status_id:'Completed', details: newDetails}, 
               function(result) {
-                console.log(result); 
+                if (result['is_error'] === 0) {
+                  callback(id);
+                }
               }
             );
             break;
           }
         }
-      }
-      else
-      {
+      } else {
         console.log("Activity not found.");
       }
     }
@@ -435,11 +436,7 @@ function newAdmins() {
     function (result) {
       for (var i in result.values) {
         val = result.values[i];
-        console.log(val.id + ": " + val.display_name + " " + val.phone);
-
-        Admin.addAdmin(val.display_name, val.phone, function(data) {
-          console.log(data.message);
-        });
+        Admin.addAdmin(val.display_name, val.phone, function(data) {});
       }
     }
   );
@@ -447,15 +444,18 @@ function newAdmins() {
 
 /* Remove Completed activities and updates Civi */
 function removeCompleted() {
-  Activity.removeActivity(function(data) {
-    if (data.success) {
-      var removed = data.removedActivities;
-      for (var i in removed) {
-        var activity = removed[i];
-        updateCivi(activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse);
+  Activity.find({'status': 'Completed', 'toReimburse': {$exists: true}}, function(err, act) {
+    if (act.length !== 0) {
+      for (var i in act) {
+        var activity = act[i];
+        updateCivi(activity.activityID, activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse, function(id) {
+          Activity.remove({'activityID': id}, function(err, res) {
+            console.log('Completed activity has been removed');
+          });
+        });
       }
     } else {
-      console.log(data.message);
+      console.log('No activities need to be removed');
     }
   });
 }

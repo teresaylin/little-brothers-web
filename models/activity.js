@@ -147,58 +147,52 @@ activitySchema.statics.noResponse = function(cb) {
   var Activity = this; 
   Activity.find({'resends': 4, 'status': 'Available'}, function(err, act) {
     if(act.length === 0) {
-      cb({ success: false, phone: "", message: 'No activities need to be sent to Staff.'})
+      cb({ success: false, noResponseAct: '', phone: "", message: 'No activities need to be sent to Staff.'})
     } else {
       //sends text to staff for every activity that's been resent 3 times
       for(var i=0; i<act.length; i++) {
         var current = act[i];
         var id = current.activityID;
-        var eldername = current.elderName; 
-        var elderAddress = current.elderAddress; 
         Activity.update({ 'activityID': id },
           { $set: { 'status': 'Completed', 'volunteer': 'Staff', 'purchased': 'no', 'toReimburse': 'no' } },
-          function(err, result) {
-            // cb({ success: true, phone: "", message: 'Changing activity status to COMPLETED' });
-          });
-        //Enter phone number of staff member in charge on manual assignment of requests
-        //IMPORTANT: INCLUDE COUNTRY CODE in variable staffPhone
-        var staffPhone = '14089159524'; 
-        modifiedStaffPhone =  staffPhone.substring(1); 
-        Admin.findOne({'phone': modifiedStaffPhone}, function(err, result) {
-          if(result === null) {
-            cb({ success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
-          } else {
-            cb({ success: true, phone: staffPhone, message: 'Staff: No Volunteers have accepted a recent emergency food request. ' + eldername + ' at ' + elderAddress + ' urgently requires groceries.'}); 
-          }
-        })
+          function(err, result) {}
+        );
       }
+      //Enter phone number of staff member in charge on manual assignment of requests
+      //IMPORTANT: INCLUDE COUNTRY CODE in variable staffPhone
+      var staffPhone = '14089159524';
+      modifiedStaffPhone =  staffPhone.substring(1);
+      Admin.findOne({'phone': modifiedStaffPhone}, function(err, result) {
+        if(result === null) {
+          cb({ success: false, noResponseAct: '', phone: "", message: 'Incorrect/ nonexisting fields'});
+        } else {
+          cb({ success: true, noResponseAct: act, phone: staffPhone, message: '' });
+        }
+      });
     }
-  }); 
+  });
 };
 
 /* Resend activities to volunteers that have not been Scheduled and have not been resent 4 times */
-activitySchema.statics.checkResends = function(cb) { 
+activitySchema.statics.checkResends = function(cb) {
   var Activity = this; 
   Activity.find({'status': 'Available', 'resends': {$lt: 4}}, function(err, act) {
     if(act.length === 0) {
-      cb({ success: false, message: "All activities have been completed or scheduled to Staff"}); 
+      cb({ success: false, resendActivities: '', message: "All activities have been completed or scheduled to Staff"});
     } else {
       //increases resend count and sends text to volunteers every hour 
       for(var i=0; i<act.length; i++) {
         var current = act[i]; 
-        var id = current.activityID; 
-        var eldername = current.elderName; 
-        var elderAddress = current.elderAddress; 
+        var id = current.activityID;
         var resendCount = current.resends; 
         resendCount = resendCount + 1;
 
         Activity.update({ 'activityID': id },
           { $set: { 'resends': resendCount } },
-          function(err, result) {
-            cb({ success: true, message: '' + resendCount + '. Urgent Emergency Food Request: ' + eldername + ' at ' + elderAddress + ' urgently requires groceries.' }); 
-          }
+          function(err, result) {}
         );
       }
+      cb({ success: true, resendActivities: act, message: '' });
     }
   }); 
 };
@@ -231,19 +225,6 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
   }); 
 }; 
 
-/* Removes a completed activity from the database */
-activitySchema.statics.removeActivity = function(cb) {
-  var Activity = this;
-  Activity.find({'status': 'Completed', 'purchased': {$exists: true}}, function(err, act) {
-    if (act.length !== 0) {
-      Activity.remove({'status': 'Completed'}, function(err, res) {
-        cb({ success: true, message: 'Completed activities have been removed', removedActivities: act });
-      });
-    } else {
-      cb({ success: false, message: 'No activities need to be removed', removedActivities: '' });
-    }
-  });
-};
 
 Activity = mongoose.model('Activity', activitySchema);
 module.exports = Activity;
