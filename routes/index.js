@@ -256,7 +256,7 @@ router.post('/replyToSMS', function(req, res, next) {
 
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
-var timer_requests = setInterval(newRequests, 1000*60*2);
+var timer_requests = setInterval(newRequests, 1000*60);
 
 newRequests();
 
@@ -284,7 +284,6 @@ function newRequests() {
               if (data.success) {
                 getVolunteerNumbers(function(numberString) {
                   sendText(message, numberString);
-                  console.log(message);
                 });
               }
             });
@@ -293,7 +292,7 @@ function newRequests() {
       } else {
         console.log("No available emergency food requests at this time.");
       }   
-    }); 
+  });
 }; 
 
 /* Checks for unscheduled activities and lack of volunteer responses to requests*/
@@ -317,7 +316,7 @@ function checkUnscheduled() {
         getVolunteerNumbers(function(callback) {
           volPhoneNums = callback;
           for (var i in resAct) {
-            var message = 'RESEND #' + (resAct[i].resends+1) + '. Urgent Emergency Food Request: ' + resAct[i].elderName + ' at ' + resAct[i].elderAddress + ' urgently requires groceries.';
+            var message = 'RESEND #' + (resAct[i].resends+1) + '. Urgent Emergency Food Request: ' + resAct[i].elderName + ' at ' + resAct[i].elderAddress + ' urgently requires groceries. Reply \"ACCEPT ' + resAct[i].elderName + '\" to accept this request.';
             sendText(message, volPhoneNums);
           }
         });
@@ -332,7 +331,6 @@ function checkScheduled() {
   Activity.checkActivityCompletion(function(data) {
     if(data.success) {
       sendText(data.message, data.phone);
-      console.log(data.message);
     }
   }); 
 }
@@ -346,7 +344,7 @@ Input:
 Output:
 -no returns; just updates CiviCRM, replacing the old request (with status "available") with a new request (with status "completed" and more details) that has all other information the same
 */
-function updateCivi(id, elderName, volunteer, purchased, toReimburse, callback) {
+function updateCivi(elderName, volunteer, purchased, toReimburse, callback) {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id: 'Available', return:'id,details,custom_102'},
     function (result) {
       if (typeof result.values != 'undefined') {
@@ -365,9 +363,7 @@ function updateCivi(id, elderName, volunteer, purchased, toReimburse, callback) 
             }
             crmAPI.call('Activity', 'create', {id: val.id, status_id:'Completed', details: newDetails}, 
               function(result) {
-                if (result['is_error'] === 0) {
-                  callback(id);
-                }
+                console.log('Completed activity has been updated in Civi')
               }
             );
             break;
@@ -385,7 +381,7 @@ Checks every 24 hours
 tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
 
-//newVolunteers(); 
+newVolunteers();
 
 var timer_volunteers = setInterval(newVolunteers, 1000*60*60*24);
 
@@ -444,17 +440,13 @@ function newAdmins() {
   );
 }
 
-/* Remove Completed activities and updates Civi */
+/* "Remove" Completed activities: updates activity status in Civi to 'Completed' */
 function removeCompleted() {
   Activity.find({'status': 'Completed', 'toReimburse': {$exists: true}}, function(err, act) {
     if (act.length !== 0) {
       for (var i in act) {
         var activity = act[i];
-        updateCivi(activity.activityID, activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse, function(id) {
-          Activity.remove({'activityID': id}, function(err, res) {
-            console.log('Completed activity has been removed');
-          });
-        });
+        updateCivi(activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse);
       }
     } else {
       console.log('No activities need to be removed');
