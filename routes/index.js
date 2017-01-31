@@ -25,7 +25,12 @@ var p = plivo.RestAPI({
   authToken: process.env.PLIVO_AUTHTOK
 });
 
-// Send an SMS through Plivo
+/*Send an SMS through Plivo
+Input:
+-text is a String representing the body of the SMS to be sent
+-phone is a String representing the phone number to send the SMS to, with a country code ("1" for the US)
+Output:
+-no returns; attempts to send SMS with Plivo. Status of text can be checked at https://manage.plivo.com/logs/messages/ */
 function sendText(text, phone)
 {
   var params = {
@@ -43,6 +48,14 @@ function sendText(text, phone)
   });
 }
 
+/*Given the name of an elder, provide their address from CiviCRM
+Input:
+-name is a String representing the name of the elder, formatted exactly how it appears in Civi ("lastname, firstname")
+-callback is the function that gets executed upon completion of this function
+Output:
+-name is the exact same String as the parameter name. This needs to be passed into the callback to ensure that asynchronous calls don't mess up future outputs.
+-address is the address that has been retrieved from Civi, in the format "street address, city" (or "(NO ADDRESS PROVIDED)" if there is no address in Civi for the elder)
+*/
 function getElderAddress(name, callback)
 {
   crmAPI.get('contact', {sort_name: name, return:'name, street_address, city'},
@@ -199,6 +212,7 @@ router.post('/changepwd', function(req, res, next) {
   });
 });
 
+/*Called whenever someone texts the Plivo number*/
 router.post('/replyToSMS', function(req, res, next) {
   // Sender's phone number
   var from_number = req.body.From || req.query.From;
@@ -241,11 +255,11 @@ router.post('/replyToSMS', function(req, res, next) {
 
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
-
 var timer_requests = setInterval(newRequests, 1000*60*60);
 
 newRequests();
 
+/*checks for available emergency food requests in CiviCRM, and sends a text message to all volunteers if there are any*/
 function newRequests() {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details,id'},
     function (result) {
@@ -314,9 +328,14 @@ function checkScheduled() {
 
 
 
-/*
-UPDATING ACTIVITY STATUS IN CIVI
-Needs to be called by something else (or can be put on timer and tweaked)
+/*Updates the status of completed requests in CiviCRM.
+Input:
+-elderName is a String that represents the name of the elder who has successfully received their groceries, formatted how it is in Civi ("lastname, firstname")
+-volunteer is a String that represents the name of the volunteer who successfully delivered the groceries
+-purchased is a String that will say "yes" if the volunteer purchased the groceries at a store, or "no" if they picked it up at the LBFE pantry
+-toReimburse is a String that will say "yes" if the volunteer wants to be reimbursed for buying groceries, or "no" if they are donating the groceries (or picked them up from the pantry)
+Output:
+-no returns; just updates CiviCRM, replacing the old request (with status "available") with a new request (with status "completed" and more details) that has all other information the same
 */
 function updateCivi(elderName, volunteer, purchased, toReimburse) {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id: 'Available', return:'id,details,custom_102'},
