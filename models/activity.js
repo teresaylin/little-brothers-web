@@ -156,7 +156,7 @@ activitySchema.statics.noResponse = function(cb) {
         var eldername = current.elderName; 
         var elderAddress = current.elderAddress; 
         Activity.update({ 'activityID': id },
-          { $set: { 'status': 'Completed', 'volunteer': 'Staff' } },
+          { $set: { 'status': 'Completed', 'volunteer': 'Staff', 'purchased': 'no', 'toReimburse': 'no' } },
           function(err, result) {
             // cb({ success: true, phone: "", message: 'Changing activity status to COMPLETED' });
           });
@@ -233,7 +233,7 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
 /* Removes a completed activity from the database */
 activitySchema.statics.removeActivity = function(cb) {
   var Activity = this;
-  Activity.find({'status': 'Completed'}, function(err, act) {
+  Activity.find({'status': 'Completed', 'purchased': {$exists: true}}, function(err, act) {
     if (act.length !== 0) {
       Activity.remove({'status': 'Completed'}, function(err, res) {
         cb({ success: true, message: 'Completed activities have been removed', removedActivities: act });

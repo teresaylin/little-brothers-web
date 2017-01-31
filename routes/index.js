@@ -278,7 +278,6 @@ function newRequests() {
               message = message + "Additional details: " + additionalDetails + " ";
             }
             message = message + "Reply \"ACCEPT " + name + "\" to accept this request."
-            //console.log(message);
             getVolunteerNumbers(function(numberString) {
               sendText(message, numberString);
             });
@@ -295,7 +294,7 @@ function newRequests() {
 }; 
 
 /* Checks for unscheduled activities and lack of volunteer responses to requests*/
-var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60*3);
+var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60*60);
 
 function checkUnscheduled() {
   Activity.noResponse(function(data) {
@@ -316,7 +315,7 @@ function checkUnscheduled() {
 }
 
 /* Checks for the completion of a scheduled activity assigned to a volunteer */
-var timer_checkScheduled = setInterval(checkScheduled, 1000*60*3); 
+var timer_checkScheduled = setInterval(checkScheduled, 1000*60*60); 
 
 function checkScheduled() {
   Activity.checkActivityCompletion(function(data) {
@@ -325,8 +324,6 @@ function checkScheduled() {
     }
   }); 
 }
-
-
 
 /*Updates the status of completed requests in CiviCRM.
 Input:
@@ -350,7 +347,7 @@ function updateCivi(elderName, volunteer, purchased, toReimburse) {
             var newDetails = val.details + "\n" + volunteer + " completed this task; they "
             if (purchased === "yes")
             {
-              newDetails += "purchased groceries themself and would ";
+              newDetails += "purchased groceries themselves and would ";
               if (toReimburse === "no")
               {
                 newDetails += "not ";
@@ -447,7 +444,7 @@ function newAdmins() {
 }
 
 /* Remove Completed activities at the end of the day and updates Civi */
-var timer_removeCompleted = setInterval(removeCompleted, 1000*60*3);
+var timer_removeCompleted = setInterval(removeCompleted, 1000*60*60*24);
 
 function removeCompleted() {
   Activity.removeActivity(function(data) {
