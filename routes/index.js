@@ -255,7 +255,7 @@ router.post('/replyToSMS', function(req, res, next) {
 
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
-var timer_requests = setInterval(newRequests, 1000*60*60);
+var timer_requests = setInterval(newRequests, 1000*60*3);
 
 newRequests();
 
@@ -294,7 +294,7 @@ function newRequests() {
 }; 
 
 /* Checks for unscheduled activities and lack of volunteer responses to requests*/
-var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60*60);
+var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60*3);
 
 function checkUnscheduled() {
   Activity.noResponse(function(data) {
@@ -315,7 +315,7 @@ function checkUnscheduled() {
 }
 
 /* Checks for the completion of a scheduled activity assigned to a volunteer */
-var timer_checkScheduled = setInterval(checkScheduled, 1000*60*60); 
+var timer_checkScheduled = setInterval(checkScheduled, 1000*60*3); 
 
 function checkScheduled() {
   Activity.checkActivityCompletion(function(data) {
@@ -444,7 +444,7 @@ function newAdmins() {
 }
 
 /* Remove Completed activities at the end of the day and updates Civi */
-var timer_removeCompleted = setInterval(removeCompleted, 1000*60*60*24);
+var timer_removeCompleted = setInterval(removeCompleted, 1000*60*3);
 
 function removeCompleted() {
   Activity.removeActivity(function(data) {
