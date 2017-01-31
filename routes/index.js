@@ -410,9 +410,7 @@ function formatPlivoNumber(numbersList, cb) {
 Checks every time website is visited
 tag ID of 'admin' is 191
 should return Teresa, Kristy, Stuti, Shana, Cynthia */
-
-
-// newAdmins();
+newAdmins();
 
 function newAdmins() {
   crmAPI.get('contact', {tag:'191', options:{limit:50}, return:'display_name,phone'},
@@ -438,9 +436,7 @@ function removeCompleted() {
       var removed = data.removedActivities;
       for (var i in removed) {
         var activity = removed[i];
-        console.log(activity);
-        console.log(activity.elderName);
-        // updateCivi(activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse);
+        updateCivi(activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse);
       }
     } else {
       console.log(data.message);
