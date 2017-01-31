@@ -194,7 +194,7 @@ activitySchema.statics.checkResends = function(cb) {
         Activity.update({ 'activityID': id },
           { $set: { 'resends': resendCount } },
           function(err, result) {
-            cb({ success: true, message: 'Urgent Emergency Food Request: ' + eldername + ' at ' + elderAddress + ' urgently requires groceries.' }); 
+            cb({ success: true, message: '' + resendCount + '. Urgent Emergency Food Request: ' + eldername + ' at ' + elderAddress + ' urgently requires groceries.' }); 
           }
         );
       }
