@@ -256,6 +256,8 @@ router.post('/replyToSMS', function(req, res, next) {
   /*var text = req.body.Text || req.query.Text;*/
   /*TWILIO VERSION*/
   var text = req.body.Body || req.query.Body;
+  console.log(from_number);
+  console.log(text);
 
   var body;
 
