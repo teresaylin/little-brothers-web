@@ -428,7 +428,7 @@ function newAdmins() {
 }
 
 /* Remove Completed activities at the end of the day and updates Civi */
-var timer_removeCompleted = setInterval(removeCompleted, 1000*60*60*24);
+var timer_removeCompleted = setInterval(removeCompleted, 1000*60*3);
 
 function removeCompleted() {
   Activity.removeActivity(function(data) {
