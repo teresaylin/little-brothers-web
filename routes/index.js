@@ -235,14 +235,15 @@ router.post('/replyToSMS', function(req, res, next) {
   nameInText = nameInText.substring(0, nameInText.length - 1); //remove last space
   Activity.updateActivity(firstToken, nameInText, phoneNum, function(data) {
     sendText(data.message, from_number);
-    if (data.success && data.sendMassText)
-    {
+    if (data.success && data.sendMassText) {
       getVolunteerNumbers(function(numberString) {
         message = "Resolved: Another volunteer has been assigned to provide emergency groceries for " + nameInText + ". They no longer require assistance."
         numbers = numberString.replace(from_number + "<", ''); //handles case where phone number is first or in the middle
         numbers = numbers.replace("<" + from_number, ''); //handles case where phone number is at end
         sendText(message, numbers);
       });
+    } else if (data.success && data.civi) {
+      removeCompleted();
     }
   });
 });
@@ -295,12 +296,13 @@ function newRequests() {
 }; 
 
 /* Checks for unscheduled activities and lack of volunteer responses to requests*/
-var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60*3);
+var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60);
 
 function checkUnscheduled() {
   Activity.noResponse(function(data) {
     if(data.success){
-        sendText(data.message, data.phone); 
+        sendText(data.message, data.phone);
+        removeCompleted();
     }
   });
   Activity.checkResends(function(data){
@@ -316,7 +318,7 @@ function checkUnscheduled() {
 }
 
 /* Checks for the completion of a scheduled activity assigned to a volunteer */
-var timer_checkScheduled = setInterval(checkScheduled, 1000*60*3); 
+var timer_checkScheduled = setInterval(checkScheduled, 1000*60); 
 
 function checkScheduled() {
   Activity.checkActivityCompletion(function(data) {
@@ -444,9 +446,7 @@ function newAdmins() {
   );
 }
 
-/* Remove Completed activities at the end of the day and updates Civi */
-var timer_removeCompleted = setInterval(removeCompleted, 1000*60*3);
-
+/* Remove Completed activities and updates Civi */
 function removeCompleted() {
   Activity.removeActivity(function(data) {
     if (data.success) {

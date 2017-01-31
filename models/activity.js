@@ -46,96 +46,96 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
     if (action === 'accept') {
       Activity.findOne({ 'elderName': elderName, 'status': 'Available' }, function(err, act) {
         if (act === null) {
-          cb({ success: false, message: '\"' + elderName + '\" does not match the name of any elder who currently requires assistance. Someone may have claimed this request before you, or this may be due to a spelling error.' });
+          cb({ success: false, message: '\"' + elderName + '\" does not match the name of any elder who currently requires assistance. Someone may have claimed this request before you, or this may be due to a spelling error.', sendMassText: false, civi: false });
         } else {
           var id = act.activityID;
           Activity.update({ 'activityID': id },
             { $set: { 'status': 'Scheduled', 'volunteer': volunteer.name } },
             function(err, result) {
-              cb({ success: true, sendMassText: true, message: 'You have been assigned to deliver emergency groceries to ' + elderName + '. Please text \"COMPLETE ' + elderName + '\" upon completion or \"CANCEL ' + elderName + '\" to cancel.' });
+              cb({ success: true, sendMassText: true, message: 'You have been assigned to deliver emergency groceries to ' + elderName + '. Please text \"COMPLETE ' + elderName + '\" upon completion or \"CANCEL ' + elderName + '\" to cancel.', civi: false });
           });
         }
       });
     } else if (action === 'complete') {
       Activity.findOne({ 'elderName': elderName, 'status': 'Scheduled', 'volunteer': volunteer.name }, function(err, act) {
         if (act === null) {
-          cb({ success: false, message: 'Please check the spelling of the elder name, and text \"COMPLETE [last name, first name]\" to confirm completion.' });
+          cb({ success: false, message: 'Please check the spelling of the elder name, and text \"COMPLETE [last name, first name]\" to confirm completion.', sendMassText: false, civi: false });
         } else {
           var id = act.activityID;
           Activity.update({ 'activityID': id },
             { $set: { 'status': 'Completed' } },
             function(err, result) {
-              cb({ success: true, sendMassText: false, message: 'Thank you for your service! Did you pick up the groceries from the LBFE pantry or purchase them from a grocery store? Please text \"PANTRY\" for pantry or \"PURCHASED\" for store.' });
+              cb({ success: true, sendMassText: false, message: 'Thank you for your service! Did you pick up the groceries from the LBFE pantry or purchase them from a grocery store? Please text \"PANTRY\" for pantry or \"PURCHASED\" for store.', civi: false });
           });
         }
       });
     } else if (action === 'cancel') {
       Activity.findOne({ 'elderName': elderName, 'status': 'Scheduled', 'volunteer': volunteer.name }, function(err, act) {
         if (act === null) {
-          cb({ success: false, message: 'Please check the spelling of the elder name, and text \"CANCEL [last name, first name]\" to cancel.' });
+          cb({ success: false, message: 'Please check the spelling of the elder name, and text \"CANCEL [last name, first name]\" to cancel.', sendMassText: false, civi: false });
         } else {
           var id = act.activityID;
           Activity.update({ 'activityID': id },
             { $set: { 'status': 'Available', 'volunteer': undefined } },
             function(err, result) {
-              cb({ success: true, sendMassText: false, message: 'You have cancelled your assignment to deliver emergency grocieries to ' + elderName + '. We hope you are able to donate your time in the future.' });
+              cb({ success: true, sendMassText: false, message: 'You have cancelled your assignment to deliver emergency grocieries to ' + elderName + '. We hope you are able to donate your time in the future.', civi: false });
           });
         }
       });
     } else if (action === 'pantry') {
       Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': undefined }, function(err, act) {
         if (act === null) {
-          cb({ success: false, message: 'Invalid input. Please try again.'});
+          cb({ success: false, message: 'Invalid input. Please try again.', sendMassText: false, civi: false });
         } else { //CIVI NEEDS TO BE UPDATED SOMEWHERE IN HERE, and after civi is updated, this row should be deleted
           var id = act.activityID;
           Activity.update({ 'activityID': id },
         { $set: { 'purchased': 'no', 'toReimburse': 'no' } },
         function(err, result) {
-          cb({ success: true, sendMassText: false, message: 'We have noted that you picked up the groceries from the LBFE pantry. Thank you!'});
+          cb({ success: true, sendMassText: false, message: 'We have noted that you picked up the groceries from the LBFE pantry. Thank you!', civi: true});
         });
         }
       });
     } else if (action === 'purchased') {
       Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': undefined }, function(err, act) {
         if (act === null) {
-          cb({ success: false, message: 'Invalid input. Please try again.'});
+          cb({ success: false, message: 'Invalid input. Please try again.', sendMassText: false, civi: false });
         } else {
           var id = act.activityID;
           Activity.update({ 'activityID': id },
         { $set: { 'purchased': 'yes' } },
         function(err, result) {
-          cb({ success: true, sendMassText: false, message: 'Would you like to be reimbursed for your purchase? Please text \"YES\" or \"NO\"'});
+          cb({ success: true, sendMassText: false, message: 'Would you like to be reimbursed for your purchase? Please text \"YES\" or \"NO\"', civi: false });
         });
         }
       });
     } else if (action === 'yes') {
       Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': 'yes', 'toReimburse': undefined }, function(err, act) {
         if (act === null) {
-          cb({ success: false, message: 'Invalid input. Please try again.'});
+          cb({ success: false, message: 'Invalid input. Please try again.', sendMassText: false, civi: false });
         } else { //CIVI NEEDS TO BE UPDATED SOMEWHERE IN HERE, and after civi is updated, this row should be deleted
           var id = act.activityID;
           Activity.update({ 'activityID': id },
         { $set: { 'toReimburse': 'yes' } },
         function(err, result) {
-          cb({ success: true, sendMassText: false, message: 'We have noted that you are awaiting reimbursement. An LBFE staff member will be in contact with you shortly. Thank you!'});
+          cb({ success: true, sendMassText: false, message: 'We have noted that you are awaiting reimbursement. An LBFE staff member will be in contact with you shortly. Thank you!', civi: true });
         });
         }
       });
     } else if (action === 'no') {
       Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': 'yes', 'toReimburse': undefined }, function(err, act) {
         if (act === null) {
-          cb({ success: false, message: 'Invalid input. Please try again.'});
+          cb({ success: false, message: 'Invalid input. Please try again.', sendMassText: false, civi: false });
         } else { //CIVI NEEDS TO BE UPDATED SOMEWHERE IN HERE, and after civi is updated, this row should be deleted
           var id = act.activityID;
           Activity.update({ 'activityID': id },
         { $set: { 'toReimburse': 'no' } },
         function(err, result) {
-          cb({ success: true, sendMassText: false, message: 'We have noted that you chose to donate your purchased groceries. Thank you!'});
+          cb({ success: true, sendMassText: false, message: 'We have noted that you chose to donate your purchased groceries. Thank you!', civi: true });
         });
         }
       });
     } else {
-      cb({ success: false, message: 'Invalid input. Please try again.'});
+      cb({ success: false, message: 'Invalid input. Please try again.', sendMassText: false, civi: false });
     }
   });
 };
@@ -191,6 +191,7 @@ activitySchema.statics.checkResends = function(cb) {
         var elderAddress = current.elderAddress; 
         var resendCount = current.resends; 
         resendCount = resendCount + 1;
+
         Activity.update({ 'activityID': id },
           { $set: { 'resends': resendCount } },
           function(err, result) {
