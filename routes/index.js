@@ -19,11 +19,18 @@ var config = {
 var crmAPI = require('civicrm')(config);
 
 // Initializing PlivoRestApi
-var plivo = require('plivo');
+/*var plivo = require('plivo');
 var p = plivo.RestAPI({
   authId: process.env.PLIVO_AUTHID,
   authToken: process.env.PLIVO_AUTHTOK
-});
+});*/
+
+// Twilio Credentials
+var accountSid = process.env.TWILIO_SID;
+var authToken = process.env.TWILIO_AUTHTOKEN;
+
+//require the Twilio module and create a REST client
+var client = require('twilio')(accountSid, authToken);
 
 /*Send an SMS through Plivo
 Input:
@@ -31,7 +38,7 @@ Input:
 -phone is a String representing the phone number to send the SMS to, with a country code ("1" for the US)
 Output:
 -no returns; attempts to send SMS with Plivo. Status of text can be checked at https://manage.plivo.com/logs/messages/ */
-function sendText(text, phone)
+/*function sendText(text, phone)
 {
   var params = {
       'src': process.env.PLIVO_NUMBER,
@@ -46,6 +53,31 @@ function sendText(text, phone)
       console.log('Message UUID:\n', response['message_uuid']);
       console.log('Api ID:\n', response['api_id']);
   });
+}*/
+
+/*TWILIO VERSION*/
+function sendText(text, phone)
+{
+  if (phone.constructor === Array) //if sending to multiple numbers
+  {
+    for (var i = 0; i < phone.length; i++)
+    {
+      sendText(text, phone[i]);
+    }
+  }
+  else
+  {
+    client.messages.create({
+        to: phone,
+        from: process.env.TWILIO_NUMBER,
+        body: text,
+    }, function (err, message) {
+        if (err)
+        {
+          console.log(err.message);
+        }
+    });
+  }
 }
 
 /*Given the name of an elder, provide their address from CiviCRM
@@ -214,18 +246,25 @@ router.post('/changepwd', function(req, res, next) {
 
 /*Called whenever someone texts the Plivo number*/
 router.post('/replyToSMS', function(req, res, next) {
+  console.log("message received");
   // Sender's phone number
   var from_number = req.body.From || req.query.From;
   // Receiver's phone number - Plivo number
   var to_number = req.body.To || req.query.To;
   // The text which was received
-  var text = req.body.Text || req.query.Text;
+  /*PLIVO VERSION*/
+  /*var text = req.body.Text || req.query.Text;*/
+  /*TWILIO VERSION*/
+  var text = req.body.Body || req.query.Body;
 
   var body;
 
   var splitText = text.split(" ");
   var firstToken = splitText[0].toLowerCase();
-  var phoneNum = from_number.substring(1);
+  /*PLIVO VERSION*/
+  /*var phoneNum = from_number.substring(1);*/
+  /*TWILIO  VERSION*/
+  var phoneNum = from_number.substring(2);
 
   var nameInText = "";
   for (var index = 1; index < splitText.length; index++) //handles names that are more than two tokens, and ensures that just "purchase", "yes", etc. won't throw index out of bound error
@@ -238,8 +277,18 @@ router.post('/replyToSMS', function(req, res, next) {
     if (data.success && data.sendMassText) {
       getVolunteerNumbers(function(numberString) {
         message = "Resolved: Another volunteer has been assigned to provide emergency groceries for " + nameInText + ". They no longer require assistance."
-        numbers = numberString.replace(from_number + "<", ''); //handles case where phone number is first or in the middle
-        numbers = numbers.replace("<" + from_number, ''); //handles case where phone number is at end
+        /*PLIVO VERSION*/
+        /*var numbers = numberString.replace(from_number + "<", ''); //handles case where phone number is first or in the middle
+        numbers = numbers.replace("<" + from_number, ''); //handles case where phone number is at end*/
+        /*TWILIO VERSION*/
+        var numbers;
+        for (var i = 0; i < numberString.length; i++)
+        {
+          if (numberString[i] !== from_number)
+          {
+            numbers.push(numberString[i]);
+          }
+        }
         sendText(message, numbers);
       });
     } else if (data.success && data.civi) {
@@ -278,7 +327,6 @@ function newRequests() {
               message = message + "Additional details: " + additionalDetails + " ";
             }
             message = message + "Reply \"ACCEPT " + name + "\" to accept this request."
-
             Activity.newActivity(id, name, address, function(data) {
               console.log(data.message);
               if (data.success) {
@@ -381,9 +429,9 @@ Checks every 24 hours
 tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
 
-newVolunteers();
+//newVolunteers();
 
-var timer_volunteers = setInterval(newVolunteers, 1000*60*60*24);
+//var timer_volunteers = setInterval(newVolunteers, 1000*60*60*24);
 
 function newVolunteers() {
   crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
@@ -403,7 +451,12 @@ function getVolunteerNumbers(callback)
   Volunteer.getNumbers(function(data) {
     if (data.success) {
       var volunteerNumbers = data.numbers;
-      formatPlivoNumber(volunteerNumbers, function(numberString) {
+      /*PLIVO VERSION*/
+      /*formatPlivoNumber(volunteerNumbers, function(numberString) {
+        callback(numberString);
+      });*/
+      /*TWILIO VERSION*/
+      formatTwilioNumbers(volunteerNumbers, function(numberString) {
         callback(numberString);
       });
     } else {
@@ -420,6 +473,14 @@ function formatPlivoNumber(numbersList, cb) {
   numberString = numberString.substring(0, numberString.length - 1) //removing extraneous "<" character at end
   numberString = numberString.replace(/-|\.|\(|\)/g, ""); //getting rid of delimiters that will mess with plivo
   cb(numberString);
+}
+
+function formatTwilioNumbers(numbersList, cb) {
+  for (var i = 0; i < numbersList.length; i++)
+  {
+    numbersList[i] = "+1" + numbersList[i].replace(/-|\.|\(|\)/g, "");
+  }
+  cb(numbersList);
 }
 
 

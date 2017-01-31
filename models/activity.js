@@ -86,7 +86,7 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
       Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': undefined }, function(err, act) {
         if (act === null) {
           cb({ success: false, message: 'Invalid input. Please try again.', sendMassText: false, civi: false });
-        } else { //CIVI NEEDS TO BE UPDATED SOMEWHERE IN HERE, and after civi is updated, this row should be deleted
+        } else {
           var id = act.activityID;
           Activity.update({ 'activityID': id },
         { $set: { 'purchased': 'no', 'toReimburse': 'no' } },
@@ -112,7 +112,7 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
       Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': 'yes', 'toReimburse': undefined }, function(err, act) {
         if (act === null) {
           cb({ success: false, message: 'Invalid input. Please try again.', sendMassText: false, civi: false });
-        } else { //CIVI NEEDS TO BE UPDATED SOMEWHERE IN HERE, and after civi is updated, this row should be deleted
+        } else {
           var id = act.activityID;
           Activity.update({ 'activityID': id },
         { $set: { 'toReimburse': 'yes' } },
@@ -125,7 +125,7 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
       Activity.findOne({ 'status': 'Completed', 'volunteer': volunteer.name, 'purchased': 'yes', 'toReimburse': undefined }, function(err, act) {
         if (act === null) {
           cb({ success: false, message: 'Invalid input. Please try again.', sendMassText: false, civi: false });
-        } else { //CIVI NEEDS TO BE UPDATED SOMEWHERE IN HERE, and after civi is updated, this row should be deleted
+        } else {
           var id = act.activityID;
           Activity.update({ 'activityID': id },
         { $set: { 'toReimburse': 'no' } },
@@ -160,8 +160,8 @@ activitySchema.statics.noResponse = function(cb) {
       }
       //Enter phone number of staff member in charge on manual assignment of requests
       //IMPORTANT: INCLUDE COUNTRY CODE in variable staffPhone
-      var staffPhone = '14089159524';
-      modifiedStaffPhone =  staffPhone.substring(1);
+      var staffPhone = '+14089159524'; //only include the "+" if sending with twilio
+      modifiedStaffPhone =  staffPhone.substring(2); //parameter should be 1 if sending with plivo
       Admin.findOne({'phone': modifiedStaffPhone}, function(err, result) {
         if(result === null) {
           cb({ success: false, noResponseAct: '', phone: "", message: 'Incorrect/ nonexisting fields'});
@@ -215,7 +215,7 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
             cb({success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
           } else {
             var volunteerPhone = result.phone; 
-            var modifiedVolunteerPhone = "1" + volunteerPhone; 
+            var modifiedVolunteerPhone = "+1" + volunteerPhone; //only include the "+" if sending with twilio
             var note = 'You have accepted the emergency food request of ' + eldername + ' at ' + elderAddress + '. Please text \"COMPLETE ' + eldername + '\" once you have fulfilled the request. If you wish to cancel, please type \"CANCEL ' + eldername + '\".'
             cb({success: true, phone: modifiedVolunteerPhone, message: note}); 
           }
