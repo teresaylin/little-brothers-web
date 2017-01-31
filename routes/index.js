@@ -283,7 +283,7 @@ router.post('/replyToSMS', function(req, res, next) {
         /*var numbers = numberString.replace(from_number + "<", ''); //handles case where phone number is first or in the middle
         numbers = numbers.replace("<" + from_number, ''); //handles case where phone number is at end*/
         /*TWILIO VERSION*/
-        var numbers;
+        var numbers = [];
         for (var i = 0; i < numberString.length; i++)
         {
           if (numberString[i] !== from_number)
