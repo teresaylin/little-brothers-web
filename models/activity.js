@@ -38,7 +38,6 @@ activitySchema.statics.newActivity = function(id, elderName, elderAddress, cb) {
   });
 };
 
-
 /* Update the activity based on volunteer's action */
 activitySchema.statics.updateActivity = function(action, elderName, vol_phone, cb) {
   var Activity = this;
@@ -194,7 +193,7 @@ activitySchema.statics.checkResends = function(cb) {
         Activity.update({ 'activityID': id },
           { $set: { 'resends': resendCount } },
           function(err, result) {
-            cb({ success: true, message: 'New Emergency Food Request: ' + eldername + ' at ' + elderAddress + ' urgently requires groceries.' }); 
+            cb({ success: true, message: 'Urgent Emergency Food Request: ' + eldername + ' at ' + elderAddress + ' urgently requires groceries.' }); 
           }
         );
       }
@@ -202,12 +201,15 @@ activitySchema.statics.checkResends = function(cb) {
   }); 
 };
 
-activitySchema.statics.removeActivity = function(id, cb) {
-  Activity.remove({'activityId': id}, function(err, act) {
-    if (act.result.n !== 0) {
-      cb({ success: true, message: 'Activity has been successfully deleted' });
+activitySchema.statics.removeActivity = function(cb) {
+  var Activity = this;
+  Activity.find({'status': 'Completed'}, function(err, act) {
+    if (act.length !== 0) {
+      Activity.remove({'status': 'Completed'}, function(err, res) {
+        cb({ success: true, message: 'Completed activities have been removed', removedActivities: act });
+      });
     } else {
-      cb({ success: false, message: 'Activity does not exist' });
+      cb({ success: false, message: 'No activities need to be removed', removedActivities: '' });
     }
   });
 };

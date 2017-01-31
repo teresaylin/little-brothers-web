@@ -25,8 +25,6 @@ var p = plivo.RestAPI({
   authToken: process.env.PLIVO_AUTHTOK
 });
 
-var volPhoneNums; 
-
 // Send an SMS through Plivo
 function sendText(text, phone)
 {
@@ -233,7 +231,6 @@ router.post('/replyToSMS', function(req, res, next) {
       });
     }
   });
-
 });
 
 /* Querying civiCRM */
@@ -245,7 +242,7 @@ router.post('/replyToSMS', function(req, res, next) {
 /* GET new emergency requests */
 // Checks for new emergency requests every hour; if there are new requests, send text
 
-// var timer_requests = setInterval(newRequests, 1000*60*60);
+var timer_requests = setInterval(newRequests, 1000*60*60);
 
 // newRequests();
 
@@ -279,27 +276,31 @@ function newRequests() {
         }
       } else {
         console.log("No available emergency food requests at this time.");
-      }
-      
+      }   
     }); 
 }; 
 
 /* Checks for unscheduled activities and lack of volunteer responses to requests*/
-Activity.noResponse(function(data) {
-  if(data.success){
-      sendText(data.message, data.phone); 
-  }
-}); 
+var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60*60);
 
-Activity.checkResends(function(data){
-  if(data.success) {
-      getVolunteerNumbers(function(callback) {
-        volPhoneNums = callback; 
-        //Put this here because of asynchronous calls
-        sendText(data.message, volPhoneNums); 
-      })
-  }
-}); 
+function checkUnscheduled() {
+  Activity.noResponse(function(data) {
+    if(data.success){
+        sendText(data.message, data.phone); 
+    }
+  });
+  Activity.checkResends(function(data){
+    if(data.success) {
+        var volPhoneNums;
+        getVolunteerNumbers(function(callback) {
+          volPhoneNums = callback; 
+          //Put this here because of asynchronous calls
+          sendText(data.message, volPhoneNums); 
+        });
+    }
+  });
+}
+
 
 /*
 UPDATING ACTIVITY STATUS IN CIVI
@@ -414,6 +415,25 @@ function newAdmins() {
       }
     }
   );
+}
+
+/* Remove Completed activities at the end of the day and updates Civi */
+var timer_removeCompleted = setInterval(removeCompleted, 1000*60*60*24);
+
+function removeCompleted() {
+  Activity.removeActivity(function(data) {
+    if (data.success) {
+      var removed = data.removedActivities;
+      for (var i in removed) {
+        var activity = removed[i];
+        console.log(activity);
+        console.log(activity.elderName);
+        // updateCivi(activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse);
+      }
+    } else {
+      console.log(data.message);
+    }
+  });
 }
 
 module.exports = router;
