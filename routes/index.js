@@ -180,7 +180,7 @@ router.post('/sms', function(req, res, next) {
   var message = req.body.text_message;
   var phone = req.body.phone_num;
   var user = req.session.currentUser;
-  //sendText(message, phone);  
+  sendText(message, phone);  
   res.render('home', {user:user});
 });
 
@@ -220,14 +220,14 @@ router.post('/replyToSMS', function(req, res, next) {
   }
   nameInText = nameInText.substring(0, nameInText.length - 1); //remove last space
   Activity.updateActivity(firstToken, nameInText, phoneNum, function(data) {
-    //sendText(data.message, from_number);
+    sendText(data.message, from_number);
     if (data.success && data.sendMassText)
     {
       getVolunteerNumbers(function(numberString) {
         message = "Resolved: Another volunteer has been assigned to provide emergency groceries for " + nameInText + ". They no longer require assistance."
         numbers = numberString.replace(from_number + "<", ''); //handles case where phone number is first or in the middle
         numbers = numbers.replace("<" + from_number, ''); //handles case where phone number is at end
-        //sendText(message, numbers);
+        sendText(message, numbers);
       });
     }
   });
@@ -266,7 +266,7 @@ function newRequests() {
             message = message + "Reply \"ACCEPT " + name + "\" to accept this request."
             //console.log(message);
             getVolunteerNumbers(function(numberString) {
-              //sendText(message, numberString);
+              sendText(message, numberString);
             });
 
             Activity.newActivity(activityID, val.custom_102, address, function(data) {
@@ -300,6 +300,18 @@ function checkUnscheduled() {
     }
   });
 }
+
+/* Checks for the completion of a scheduled activity assigned to a volunteer */
+var timer_checkScheduled = setInterval(checkScheduled, 1000*60*60); 
+
+function checkScheduled() {
+  Activity.checkActivityCompletion(function(data) {
+    if(data.success) {
+      sendText(data.message, data.phone);   
+    }
+  }); 
+}
+
 
 
 /*

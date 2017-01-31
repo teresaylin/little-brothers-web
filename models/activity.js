@@ -161,6 +161,7 @@ activitySchema.statics.noResponse = function(cb) {
             // cb({ success: true, phone: "", message: 'Changing activity status to COMPLETED' });
           });
         //Enter phone number of staff member in charge on manual assignment of requests
+        //IMPORTANT: INCLUDE COUNTRY CODE in variable staffPhone
         var staffPhone = '14089159524'; 
         modifiedStaffPhone =  staffPhone.substring(1); 
         Admin.findOne({'phone': modifiedStaffPhone}, function(err, result) {
@@ -175,7 +176,7 @@ activitySchema.statics.noResponse = function(cb) {
   }); 
 };
 
-/* Resend activities that have not been Scheduled and have not been resent 4 times */
+/* Resend activities to volunteers that have not been Scheduled and have not been resent 4 times */
 activitySchema.statics.checkResends = function(cb) { 
   var Activity = this; 
   Activity.find({'status': 'Available', 'resends': {$lt: 4}}, function(err, act) {
@@ -201,6 +202,35 @@ activitySchema.statics.checkResends = function(cb) {
   }); 
 };
 
+/* Checks for the completion of scheduled activities assigned to volunteers */
+activitySchema.statics.checkActivityCompletion = function(cb) {
+  var Activity = this; 
+  Activity.find({'status': 'Scheduled'}, function(err, act) {
+    if(act.length === 0) {
+      cb({success: false, phone: "", message: "No activities are marked as scheduled"}); 
+    } else {
+      for(var i=0; i<act.length; i++) {
+        var current = act[i]; 
+        var id = current.activityID; 
+        var eldername = current.elderName; 
+        var elderAddress = current.elderAddress; 
+        var volunteerName = current.volunteer; 
+        Volunteer.findOne({'name': volunteerName}, function(err, result) {
+          if(result === null) {
+            cb({success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
+          } else {
+            var volunteerPhone = result.phone; 
+            var modifiedVolunteerPhone = "1" + volunteerPhone; 
+            var note = 'You have accepted the emergency food request of ' + eldername + ' at ' + elderAddress + '. Please text \"COMPLETE ' + eldername + '\" once you have fulfilled the request. If you wish to cancel, please type \"CANCEL ' + eldername + '\".'
+            cb({success: true, phone: modifiedVolunteerPhone, message: note}); 
+          }
+        })
+      }    
+    }
+  }); 
+}; 
+
+/* Removes a completed activity from the database */
 activitySchema.statics.removeActivity = function(cb) {
   var Activity = this;
   Activity.find({'status': 'Completed'}, function(err, act) {
