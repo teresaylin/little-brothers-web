@@ -279,13 +279,12 @@ function newRequests() {
               message = message + "Additional details: " + additionalDetails + " ";
             }
             message = message + "Reply \"ACCEPT " + name + "\" to accept this request."
+            getVolunteerNumbers(function(numberString) {
+              sendText(message, numberString);
+            });
 
             Activity.newActivity(activityID, val.custom_102, address, function(data) {
-              if (data.success) {
-                getVolunteerNumbers(function(numberString) {
-                  sendText(message, numberString);
-                });
-              }
+              console.log(data.message);
             });
           });
         }
