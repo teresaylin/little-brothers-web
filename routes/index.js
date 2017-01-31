@@ -244,7 +244,7 @@ router.post('/replyToSMS', function(req, res, next) {
 
 var timer_requests = setInterval(newRequests, 1000*60*60);
 
-// newRequests();
+newRequests();
 
 function newRequests() {
   crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id:'Available', return:'custom_102,details,id'},
@@ -281,7 +281,7 @@ function newRequests() {
 }; 
 
 /* Checks for unscheduled activities and lack of volunteer responses to requests*/
-var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60*60);
+var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60*3);
 
 function checkUnscheduled() {
   Activity.noResponse(function(data) {
@@ -302,7 +302,7 @@ function checkUnscheduled() {
 }
 
 /* Checks for the completion of a scheduled activity assigned to a volunteer */
-var timer_checkScheduled = setInterval(checkScheduled, 1000*60*60); 
+var timer_checkScheduled = setInterval(checkScheduled, 1000*60*3); 
 
 function checkScheduled() {
   Activity.checkActivityCompletion(function(data) {
