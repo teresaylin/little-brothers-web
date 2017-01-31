@@ -278,13 +278,15 @@ function newRequests() {
               message = message + "Additional details: " + additionalDetails + " ";
             }
             message = message + "Reply \"ACCEPT " + name + "\" to accept this request."
-            getVolunteerNumbers(function(numberString) {
-              // sendText(message, numberString);
-              console.log(message);
-            });
 
             Activity.newActivity(id, name, address, function(data) {
               console.log(data.message);
+              if (data.success) {
+                getVolunteerNumbers(function(numberString) {
+                  sendText(message, numberString);
+                  console.log(message);
+                });
+              }
             });
           });
         }
@@ -315,7 +317,7 @@ function checkUnscheduled() {
         getVolunteerNumbers(function(callback) {
           volPhoneNums = callback;
           for (var i in resAct) {
-            var message = '' + (resAct[i].resends+1) + '. Urgent Emergency Food Request: ' + resAct[i].elderName + ' at ' + resAct[i].elderAddress + ' urgently requires groceries.';
+            var message = 'RESEND #' + (resAct[i].resends+1) + '. Urgent Emergency Food Request: ' + resAct[i].elderName + ' at ' + resAct[i].elderAddress + ' urgently requires groceries.';
             sendText(message, volPhoneNums);
           }
         });
@@ -329,7 +331,7 @@ var timer_checkScheduled = setInterval(checkScheduled, 1000*60);
 function checkScheduled() {
   Activity.checkActivityCompletion(function(data) {
     if(data.success) {
-      // sendText(data.message, data.phone);
+      sendText(data.message, data.phone);
       console.log(data.message);
     }
   }); 
