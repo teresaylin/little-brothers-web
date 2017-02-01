@@ -495,8 +495,10 @@ Input:
 Output:
 -no returns; just updates CiviCRM, replacing the old request (with status "available") with a new request (with status "completed" and more details) that has all other information the same
 */
-function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse, callback) {
-  crmAPI.get('Activity', {status_id: 'Available', id: activity_id, return:'id,details,custom_102'},
+function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse) {
+  crmAPI.get('Activity', {id: activity_id, status_id: 'Available', return:'id,details,custom_102'},
+    console.log('updateCivi parameters');
+    console.log(activity_id + elderName + volunteer + purchased + toReimburse);
     function (result) {
       console.log(result);
       if (typeof result.values != 'undefined') {
@@ -533,9 +535,11 @@ function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse, c
 /* "Remove" Completed activities: updates activity status in Civi to 'Completed' */
 function removeCompleted() {
   Activity.find({'status': 'Completed', 'toReimburse': {$exists: true}}, function(err, act) {
+    console.log('act: ' + act)
     if (act.length !== 0) {
       for (var i in act) {
         var activity = act[i];
+        console.log(activity);
         updateCivi(activity.activityID, activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse);
       }
     } else {
