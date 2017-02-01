@@ -46,7 +46,16 @@ activitySchema.statics.newActivity = function(id, elderName, elderAddress, cb) {
   });
 };
 
-/* Update the activity based on volunteer's action */
+/* Update the activity based on volunteer's action
+Possible actions:
+-'accept': updates 'status' to be 'Scheduled' and 'volunteer' to be volunteer with 'phone':vol_phone
+-'cancel': updates 'status' to be 'Available' and 'volunteer' to be undefined
+-'complete': updates 'status' to be 'Completed'
+-'pantry': updates 'purchased' to be 'no' and 'toReimburse' to be 'no'
+-'purchased': updates 'purchased' to be 'yes'
+-'yes': updates 'toReimburse' to be 'yes'
+-'no': updates 'toReimburse' to be 'no'
+ */
 activitySchema.statics.updateActivity = function(action, elderName, vol_phone, cb) {
   var Activity = this;
 
@@ -149,8 +158,7 @@ activitySchema.statics.updateActivity = function(action, elderName, vol_phone, c
 };
 
 
-
-/* No volunteer response after 3 resends --> send request to staff */
+/* Checks for no response after 3 resends --> send request to a staff member in charge of manual assignment */
 activitySchema.statics.noResponse = function(cb) {
   var Activity = this; 
   Activity.find({'resends': 4, 'status': 'Available'}, function(err, act) {
@@ -166,7 +174,7 @@ activitySchema.statics.noResponse = function(cb) {
           function(err, result) {}
         );
       }
-      //Enter phone number of staff member in charge on manual assignment of requests
+      //Enter phone number of staff member in charge of manual assignment of requests
       var staffPhone = '4089159524';
       var modifiedStaffPhone = countryCode + staffPhone;
 
@@ -181,14 +189,13 @@ activitySchema.statics.noResponse = function(cb) {
   });
 };
 
-/* Resend activities to volunteers that have not been Scheduled and have not been resent 4 times */
+/* Resend activities that have not been Scheduled and have not been resent 3 times to volunteers */
 activitySchema.statics.checkResends = function(cb) {
   var Activity = this; 
   Activity.find({'status': 'Available', 'resends': {$lt: 4}}, function(err, act) {
     if(act.length === 0) {
       cb({ success: false, resendActivities: '', message: "All activities have been completed or scheduled to Staff"});
     } else {
-      //increases resend count and sends text to volunteers every hour 
       for(var i=0; i<act.length; i++) {
         var current = act[i]; 
         var id = current.activityID;
@@ -275,7 +282,6 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
       }    
     }
   });
-  
 }; 
 
 
