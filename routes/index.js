@@ -57,19 +57,24 @@ Output:
 /*END PLIVO VERSION*/
 
 /*TWILIO VERSION*/
-function sendText(text, phone) {
-  // if sending to multiple numbers
-  if (phone.constructor === Array) {
-    for (var i = 0; i < phone.length; i++) {
+function sendText(text, phone)
+{
+  if (phone.constructor === Array) //if sending to multiple numbers
+  {
+    for (var i = 0; i < phone.length; i++)
+    {
       sendText(text, phone[i]);
     }
-  } else {
+  }
+  else
+  {
     client.messages.create({
         to: phone,
         from: process.env.TWILIO_NUMBER,
         body: text,
     }, function (err, message) {
-        if (err) {
+        if (err)
+        {
           console.log(err.message);
         }
     });
@@ -252,8 +257,8 @@ router.post('/replyToSMS', function(req, res, next) {
   /*END TWILIO VERSION*/
 
   var nameInText = "";
-  //handles names that are more than two tokens, and ensures that just "purchase", "yes", etc. won't throw index out of bound error
-  for (var index = 1; index < splitText.length; index++) {
+  for (var index = 1; index < splitText.length; index++) //handles names that are more than two tokens, and ensures that just "purchase", "yes", etc. won't throw index out of bound error
+  {
     nameInText += splitText[index] + " ";
   }
   nameInText = nameInText.substring(0, nameInText.length - 1); //remove last space
@@ -459,7 +464,8 @@ function formatPlivoNumber(numbersList, cb) {
 }
 
 function formatTwilioNumbers(numbersList, cb) {
-  for (var i = 0; i < numbersList.length; i++) {
+  for (var i = 0; i < numbersList.length; i++)
+  {
     numbersList[i] = "+1" + numbersList[i].replace(/-|\.|\(|\)/g, "");
   }
   cb(numbersList);
