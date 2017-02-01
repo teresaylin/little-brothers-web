@@ -502,7 +502,6 @@ function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse) {
       console.log(activity_id + elderName + volunteer + purchased + toReimburse);
       console.log(result);
       if (typeof result.values != 'undefined') {
-        console.log('result.values[0]: ' + result.values[0].id + result.values[0].details + result.values[0].custom_102);
         val = result.values[0];
         var newDetails = "";
         if (val.details !== undefined) {
@@ -523,6 +522,11 @@ function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse) {
           function(result) {
             console.log('result of updating Civi: ' + result);
             console.log('Completed activity has been updated in Civi');
+            Activity.update({ 'activityID': activity_id }, {$set: {'updatedCivi': 'yes'}}, function(err, result) {
+              if (result) {
+                console.log('updated updatedCivi field');
+              }
+            })
           }
         );
       } else {
@@ -534,7 +538,7 @@ function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse) {
 
 /* "Remove" Completed activities: updates activity status in Civi to 'Completed' */
 function removeCompleted() {
-  Activity.find({'status': 'Completed', 'toReimburse': {$exists: true}}, function(err, act) {
+  Activity.find({'status': 'Completed', 'updatedCivi': 'no'}, function(err, act) {
     console.log('act: ' + act);
     if (act.length !== 0) {
       for (var i in act) {

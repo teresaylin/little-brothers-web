@@ -12,7 +12,8 @@ var activitySchema = new mongoose.Schema({
   status: { type: String, default: 'Available', required: true },
   resends: { type: Number, default: 1, required: true },
   purchased: { type: String },
-  toReimburse: { type: String }
+  toReimburse: { type: String },
+  updatedCivi: { type: String, default: 'no', required: true }
 });
 
 /*PLIVO VERSION*/
