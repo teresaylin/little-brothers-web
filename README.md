@@ -34,6 +34,7 @@ navigate to the little-brothers-web directory and run ```mongod --dbpath data```
 If an error occurs during ```npm install``` or ```npm start``` saying that there is an issue with node-gyp or bcrypt:
 Check if node and npm are up to date (can be done with ```node -v``` and ```npm -v``` respectively). If not up to date, update them.
 If the error still occurs:
+
 1. Run Command Prompt as an administrator. 
 2. Navigate to little-brothers-web.
 3. Type ```npm install --save bcryptjs && npm uninstall --save bcrypt```.
@@ -45,11 +46,12 @@ been incredibly unhelpful with this issue and we have yet to find a workaround. 
 (sent or failed). Note that you must be logged into the LBFE Plivo account to use this feature.
 In the future, it might be best to switch to a more reliable SMS service, such as Twilio. If this is done, switch to the Twilio versions of the following code by uncommenting lines preceded by
 ```/*TWILIO VERSION*/``` and commenting lines preceded by ```/*PLIVO VERSION*/```:
--initializing Plivo/Twilio in routes/index.js
--```sendText()``` in routes/index.js
--```router.post('/replyToSMS')``` in routes/index.js (3 changes)
--```getVolunteerNumbers()``` in routes/index.js
--variable ```countryCode``` in models/activity.js
+
+- initializing Plivo/Twilio in routes/index.js
+- ```sendText()``` in routes/index.js
+- ```router.post('/replyToSMS')``` in routes/index.js (3 changes)
+- ```getVolunteerNumbers()``` in routes/index.js
+- variable ```countryCode``` in models/activity.js
 
 
 On the Twilio website, navigate to the [Console's Numbers page](https://www.twilio.com/console/phone-numbers/incoming). Click on the LBFE phone number and scroll down to the "Messaging" section.
@@ -57,10 +59,11 @@ In the field that says "A MESSAGE COMES IN", ensure that the URL is ```https://l
 
 ####A Quick Note on Timers
 We foresee that a modification that LBFE is most likely to want to make would be changing the timing of text alerts/reminders. Here is a list of all the timers that our program uses:
--```timer_requests``` (how long to wait before looking for new Emergency Food Requests in CiviCRM)
--```timer_checkUnscheduled``` (how long to wait before resending unclaimed requests)
--```timer_checkScheduled``` (how long to wait before reminding a volunteer to complete their assignment or respond to a message)
--```timer_volunteers``` (how long to wait before checking for new volunteers to add to Mongo database)
+
+- ```timer_requests``` (how long to wait before looking for new Emergency Food Requests in CiviCRM)
+- ```timer_checkUnscheduled``` (how long to wait before resending unclaimed requests)
+- ```timer_checkScheduled``` (how long to wait before reminding a volunteer to complete their assignment or respond to a message)
+- ```timer_volunteers``` (how long to wait before checking for new volunteers to add to Mongo database)
 
 If you would like to change the amount of time to wait before executing any of these tasks, find the line in routes/index.js where the appropriate timer is instantiated and change the second
 parameter of setInterval. Note that setInterval takes the amount of time in **milliseconds**. We recommend inputting the time to wait as follows: ```1000*seconds*minutes*hours*days```. For example, 3
