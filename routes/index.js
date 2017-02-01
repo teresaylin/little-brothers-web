@@ -18,20 +18,21 @@ var config = {
 };
 var crmAPI = require('civicrm')(config);
 
-// Initializing PlivoRestApi
+/*PLIVO VERSION*/
 /*var plivo = require('plivo');
 var p = plivo.RestAPI({
   authId: process.env.PLIVO_AUTHID,
   authToken: process.env.PLIVO_AUTHTOK
 });*/
+/*END PLIVO VERSION*/
 
-// Twilio Credentials
+/*TWILIO VERSION*/
 var accountSid = process.env.TWILIO_SID;
 var authToken = process.env.TWILIO_AUTHTOKEN;
-
-//require the Twilio module and create a REST client
 var client = require('twilio')(accountSid, authToken);
+/*END TWILIO VERSION*/
 
+/*PLIVO VERSION*/
 /*Send an SMS through Plivo
 Input:
 -text is a String representing the body of the SMS to be sent
@@ -54,6 +55,7 @@ Output:
       console.log('Api ID:\n', response['api_id']);
   });
 }*/
+/*END PLIVO VERSION*/
 
 /*TWILIO VERSION*/
 function sendText(text, phone)
@@ -79,6 +81,7 @@ function sendText(text, phone)
     });
   }
 }
+/*END TWILIO VERSION*/
 
 /*Given the name of an elder, provide their address from CiviCRM
 Input:
@@ -244,18 +247,23 @@ router.post('/changepwd', function(req, res, next) {
   });
 });
 
-/*Called whenever someone texts the Plivo number*/
+/*Called whenever someone texts the number*/
 router.post('/replyToSMS', function(req, res, next) {
   console.log("message received");
   // Sender's phone number
   var from_number = req.body.From || req.query.From;
   // Receiver's phone number - Plivo number
   var to_number = req.body.To || req.query.To;
+
   // The text which was received
   /*PLIVO VERSION*/
   /*var text = req.body.Text || req.query.Text;*/
+  /*END PLIVO VERSION*/
+
   /*TWILIO VERSION*/
   var text = req.body.Body || req.query.Body;
+  /*END TWILIO VERSION*/
+
   console.log(from_number);
   console.log(text);
 
@@ -263,10 +271,14 @@ router.post('/replyToSMS', function(req, res, next) {
 
   var splitText = text.split(" ");
   var firstToken = splitText[0].toLowerCase();
+
   /*PLIVO VERSION*/
   /*var phoneNum = from_number.substring(1);*/
+  /*END PLIVO VERSION*/
+
   /*TWILIO  VERSION*/
   var phoneNum = from_number.substring(2);
+  /*END TWILIO VERSION*/
 
   var nameInText = "";
   for (var index = 1; index < splitText.length; index++) //handles names that are more than two tokens, and ensures that just "purchase", "yes", etc. won't throw index out of bound error
@@ -279,9 +291,12 @@ router.post('/replyToSMS', function(req, res, next) {
     if (data.success && data.sendMassText) {
       getVolunteerNumbers(function(numberString) {
         message = "Resolved: Another volunteer has been assigned to provide emergency groceries for " + nameInText + ". They no longer require assistance."
+
         /*PLIVO VERSION*/
         /*var numbers = numberString.replace(from_number + "<", ''); //handles case where phone number is first or in the middle
         numbers = numbers.replace("<" + from_number, ''); //handles case where phone number is at end*/
+        /*END PLIVO VERSION*/
+
         /*TWILIO VERSION*/
         var numbers = [];
         for (var i = 0; i < numberString.length; i++)
@@ -291,6 +306,7 @@ router.post('/replyToSMS', function(req, res, next) {
             numbers.push(numberString[i]);
           }
         }
+        /*END TWILIO VERSION*/
 
         sendText(message, numbers);
       });
@@ -437,9 +453,9 @@ Checks every 24 hours
 tag ID of 'Emergency Food Package Volunteer' is 190
 should return Teresa, Kristy, Stuti, Shana */
 
-//newVolunteers();
+newVolunteers();
 
-//var timer_volunteers = setInterval(newVolunteers, 1000*60*60*24);
+var timer_volunteers = setInterval(newVolunteers, 1000*60*60*24);
 
 function newVolunteers() {
   crmAPI.get('contact', {tag:'190', return:'display_name,phone'},
@@ -459,14 +475,18 @@ function getVolunteerNumbers(callback)
   Volunteer.getNumbers(function(data) {
     if (data.success) {
       var volunteerNumbers = data.numbers;
+
       /*PLIVO VERSION*/
       /*formatPlivoNumber(volunteerNumbers, function(numberString) {
         callback(numberString);
       });*/
+      /*END PLIVO VERSION*/
+
       /*TWILIO VERSION*/
       formatTwilioNumbers(volunteerNumbers, function(numberString) {
         callback(numberString);
       });
+      /*END TWILIO VERSION*/
     } else {
       callback('');
     }

@@ -15,6 +15,14 @@ var activitySchema = new mongoose.Schema({
   toReimburse: { type: String }
 });
 
+/*PLIVO VERSION*/
+/*var countryCode = "1"; //assuming for USA*/
+/*END PLIVO VERSION*/
+
+/*TWILIO VERSION*/
+var countryCode = "+1"; //assuming for USA
+/*END TWILIO VERSION*/
+
 /* Create an entry for a new Emergency Food Package activity */
 activitySchema.statics.newActivity = function(id, elderName, elderAddress, cb) {
   var Activity = this;
@@ -159,14 +167,14 @@ activitySchema.statics.noResponse = function(cb) {
         );
       }
       //Enter phone number of staff member in charge on manual assignment of requests
-      //IMPORTANT: INCLUDE COUNTRY CODE in variable staffPhone
-      var staffPhone = '+14089159524'; //only include the "+" if sending with twilio
-      modifiedStaffPhone =  staffPhone.substring(2); //parameter should be 1 if sending with plivo
-      Admin.findOne({'phone': modifiedStaffPhone}, function(err, result) {
+      var staffPhone = '4089159524';
+      var modifiedStaffPhone = countryCode + staffPhone;
+
+      Admin.findOne({'phone': staffPhone}, function(err, result) {
         if(result === null) {
           cb({ success: false, noResponseAct: '', phone: "", message: 'Incorrect/ nonexisting fields'});
         } else {
-          cb({ success: true, noResponseAct: act, phone: staffPhone, message: '' });
+          cb({ success: true, noResponseAct: act, phone: modifiedStaffPhone, message: '' });
         }
       });
     }
@@ -215,7 +223,7 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
             cb({success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
           } else {
             var volunteerPhone = result.phone; 
-            var modifiedVolunteerPhone = "+1" + volunteerPhone; //only include the "+" if sending with twilio
+            var modifiedVolunteerPhone = countryCode + volunteerPhone;
             var note = 'You have accepted the emergency food request of ' + eldername + ' at ' + elderAddress + '. Please text \"COMPLETE ' + eldername + '\" once you have fulfilled the request. If you wish to cancel, please type \"CANCEL ' + eldername + '\".'
             cb({success: true, phone: modifiedVolunteerPhone, message: note}); 
           }
@@ -237,7 +245,7 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
             cb({success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
           } else {
             var volunteerPhone = result.phone; 
-            var modifiedVolunteerPhone = "+1" + volunteerPhone; //only include the "+" if sending with twilio
+            var modifiedVolunteerPhone = countryCode + volunteerPhone;
             var note = 'You have recently completed the emergency food request of ' + eldername + '. Did you pick up the groceries from the LBFE pantry or purchase them from a grocery store? Please text \"PANTRY\" for pantry or \"PURCHASED\" for store.';
             cb({success: true, phone: modifiedVolunteerPhone, message: note}); 
           }
@@ -259,7 +267,7 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
             cb({success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
           } else {
             var volunteerPhone = result.phone; 
-            var modifiedVolunteerPhone = "+1" + volunteerPhone; //only include the "+" if sending with twilio
+            var modifiedVolunteerPhone = countryCode + volunteerPhone;
             var note = 'You have recently completed the emergency food request of ' + eldername + ' by buying groceries. Would you like to be reimbursed for your purchase? Please text \"YES\" or \"NO\"';
             cb({success: true, phone: modifiedVolunteerPhone, message: note}); 
           }
