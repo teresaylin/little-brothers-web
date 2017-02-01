@@ -370,7 +370,6 @@ function checkUnscheduled() {
       var noResAct = data.noResponseAct;
       for (var i in noResAct) {
         var message = 'Staff: No volunteers have accepted a recent emergency food request. ' + noResAct[i].elderName + ' at ' + noResAct[i].elderAddress + ' urgently requires groceries.';
-        console.log(message);
         sendText(message, data.phone);
       }
       removeCompleted();
@@ -498,9 +497,6 @@ Output:
 function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse) {
   crmAPI.get('Activity', {id: activity_id, status_id: 'Available', return:'id,details,custom_102'},
     function (result) {
-      console.log('updateCivi parameters');
-      console.log(activity_id + elderName + volunteer + purchased + toReimburse);
-      console.log(result);
       if (typeof result.values != 'undefined') {
         val = result.values[0];
         var newDetails = "";
@@ -517,16 +513,9 @@ function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse) {
         } else {
           newDetails += "picked up groceries from the LBFE pantry.";
         }
-        console.log('activity_id: ' + activity_id);
         crmAPI.call('Activity', 'create', {id: activity_id, status_id:'Completed', details: newDetails},
           function(result) {
-            console.log('result of updating Civi: ' + result);
-            console.log('Completed activity has been updated in Civi');
-            Activity.update({ 'activityID': activity_id }, {$set: {'updatedCivi': 'yes'}}, function(err, result) {
-              if (result) {
-                console.log('updated updatedCivi field');
-              }
-            })
+            Activity.update({ 'activityID': activity_id }, {$set: {'updatedCivi': 'yes'}}, function(err, result) {});
           }
         );
       } else {
@@ -539,11 +528,9 @@ function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse) {
 /* "Remove" Completed activities: updates activity status in Civi to 'Completed' */
 function removeCompleted() {
   Activity.find({'status': 'Completed', 'updatedCivi': 'no'}, function(err, act) {
-    console.log('act: ' + act);
     if (act.length !== 0) {
       for (var i in act) {
         var activity = act[i];
-        console.log(activity);
         updateCivi(activity.activityID, activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse);
       }
     } else {
