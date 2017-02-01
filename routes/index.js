@@ -495,29 +495,33 @@ Output:
 -no returns; just updates CiviCRM, replacing the old request (with status "available") with a new request (with status "completed" and more details) that has all other information the same
 */
 function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse, callback) {
-  crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id: 'Available', id: activity_id, return:'id,details,custom_102'},
+  crmAPI.get('Activity', {status_id: 'Available', id: activity_id, return:'id,details,custom_102'},
     function (result) {
+      console.log(result);
       if (typeof result.values != 'undefined') {
+        console.log('result.values[0]: ' + result.values[0].id + result.values[0].details + result.values[0].custom_102);
         val = result.values[0];
         var newDetails = "";
-            if (val.details !== undefined) {
-              newDetails += val.details + "\n";
-            }
-            newDetails += volunteer + " completed this task; they "
-            if (purchased === "yes") {
-              newDetails += "purchased groceries themselves and would ";
-              if (toReimburse === "no") {
-                newDetails += "not ";
-              }
-              newDetails += "like to be reimbursed.";
-            } else {
-              newDetails += "picked up groceries from the LBFE pantry.";
-            }
-            crmAPI.call('Activity', 'create', {id: val.id, status_id:'Completed', details: newDetails},
-              function(result) {
-                console.log('Completed activity has been updated in Civi')
-              }
-            );
+        if (val.details !== undefined) {
+          newDetails += val.details + "\n";
+        }
+        newDetails += volunteer + " completed this task; they "
+        if (purchased === "yes") {
+          newDetails += "purchased groceries themselves and would ";
+          if (toReimburse === "no") {
+            newDetails += "not ";
+          }
+          newDetails += "like to be reimbursed.";
+        } else {
+          newDetails += "picked up groceries from the LBFE pantry.";
+        }
+        console.log('activity_id: ' + activity_id);
+        crmAPI.call('Activity', 'create', {id: activity_id, status_id:'Completed', details: newDetails},
+          function(result) {
+            console.log('result of updating Civi: ' + result);
+            console.log('Completed activity has been updated in Civi');
+          }
+        );
       } else {
         console.log("Activity not found.");
       }
