@@ -147,7 +147,6 @@ router.post('/delete', function(req, res, next) {
   var volunteerName = req.body.volunteer_name;
   var user = req.session.currentUser;
   Volunteer.removeVolunteer(volunteerName, function(data) {
-    console.log(data.message);
     var query = Volunteer.find({});
     query.exec(function (err, volunteers) {
       if (err) {
@@ -163,7 +162,6 @@ router.post('/addVolunteer', function(req, res, next) {
   var volunteerPhone = req.body.volunteer_phone;
   var user = req.session.currentUser;
   Volunteer.addVolunteer(volunteerName, volunteerPhone, function(data) {
-    console.log(data.message);
     var query = Volunteer.find({});
     query.exec(function (err, volunteers) {
       if (err) {
@@ -190,9 +188,11 @@ router.get('/activities', function (req, res, next) {
   }
 });
 
-router.post('/plivo', function(req, res, next) {
-  console.log(req.body);
-});
+/*PLIVO VERSION*/
+// router.post('/plivo', function(req, res, next) {
+//   console.log(req.body);
+// });
+/*END PLIVO VERSION*/
 
 router.post('/sms', function(req, res, next) {
   var message = req.body.text_message;
@@ -234,11 +234,7 @@ router.post('/replyToSMS', function(req, res, next) {
   var text = req.body.Body || req.query.Body;
   /*END TWILIO VERSION*/
 
-  console.log(from_number);
-  console.log(text);
-
   var body;
-
   var splitText = text.split(" ");
   var firstToken = splitText[0].toLowerCase();
 
