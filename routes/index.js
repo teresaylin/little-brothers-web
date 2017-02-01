@@ -4,7 +4,6 @@ var router = express.Router();
 var secrets = require('dotenv').config();
 
 var User = require('../models/user');
-var Admin = require('../models/admin');
 var Volunteer = require('../models/volunteer');
 var Activity = require('../models/activity');
 
@@ -57,31 +56,24 @@ Output:
 /*END PLIVO VERSION*/
 
 /*TWILIO VERSION*/
-function sendText(text, phone)
-{
-  if (phone.constructor === Array) //if sending to multiple numbers
-  {
-    for (var i = 0; i < phone.length; i++)
-    {
+function sendText(text, phone) {
+  if (phone.constructor === Array) {
+    for (var i = 0; i < phone.length; i++) {
       sendText(text, phone[i]);
     }
-  }
-  else
-  {
+  } else {
     client.messages.create({
         to: phone,
         from: process.env.TWILIO_NUMBER,
         body: text,
     }, function (err, message) {
-        if (err)
-        {
+        if (err) {
           console.log(err.message);
         }
     });
   }
 }
 /*END TWILIO VERSION*/
-
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -257,8 +249,8 @@ router.post('/replyToSMS', function(req, res, next) {
   /*END TWILIO VERSION*/
 
   var nameInText = "";
-  for (var index = 1; index < splitText.length; index++) //handles names that are more than two tokens, and ensures that just "purchase", "yes", etc. won't throw index out of bound error
-  {
+  //handles names that are more than two tokens, and ensures that just "purchase", "yes", etc. won't throw index out of bound error
+  for (var index = 1; index < splitText.length; index++) {
     nameInText += splitText[index] + " ";
   }
   nameInText = nameInText.substring(0, nameInText.length - 1); //remove last space
@@ -401,6 +393,26 @@ var timer_checkScheduled = setInterval(checkScheduled, 1000*60);
 
 function checkScheduled() {
   Activity.checkActivityCompletion(function(data) {
+    if(data.success) {
+      sendText(data.message, data.phone);
+    }
+  }); 
+}
+
+var timer_checkPantry = setInterval(checkPantry, 1000*60); 
+
+function checkPantry() {
+  Activity.checkPantry(function(data) {
+    if(data.success) {
+      sendText(data.message, data.phone);
+    }
+  }); 
+}
+
+var timer_checkReimburse = setInterval(checkReimburse, 1000*60); 
+
+function checkReimburse() {
+  Activity.checkReimburse(function(data) {
     if(data.success) {
       sendText(data.message, data.phone);
     }
