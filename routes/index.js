@@ -370,6 +370,7 @@ function checkUnscheduled() {
       var noResAct = data.noResponseAct;
       for (var i in noResAct) {
         var message = 'Staff: No volunteers have accepted a recent emergency food request. ' + noResAct[i].elderName + ' at ' + noResAct[i].elderAddress + ' urgently requires groceries.';
+        console.log(message);
         sendText(message, data.phone);
       }
       removeCompleted();
