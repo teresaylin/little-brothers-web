@@ -10,6 +10,8 @@ emergency requests are completed and updated within the database.
 We deployed our [web application](https://lbfe.herokuapp.com/) to Heroku and used the add-on MongoLabs to use for database testing. There is no need for additional deployment steps unless you need to
 conduct local tests or modify code (see "Local Deployment Requirements").
 
+**If you modify code, make sure to push it to Heroku for changes to take effect!**
+
 ####Local Deployment Requirements
 After pulling from Git, create a .env file in your project directory with the following information:
 ```
