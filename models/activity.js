@@ -238,6 +238,9 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
       }    
     }
   });
+};
+
+activitySchema.statics.checkPantry = function(cb) {
   Activity.find({'status': 'Completed', 'purchased': undefined}, function(err, act) {
     if(act.length === 0) {
       cb({success: false, phone: "", message: "No completed activities are pending purchase info"}); 
@@ -260,6 +263,9 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
       }    
     }
   });
+};
+
+activitySchema.statics.checkReimburse = function(cb) {
   Activity.find({'status': 'Completed', 'purchased': 'yes', 'toReimburse': undefined}, function(err, act) {
     if(act.length === 0) {
       cb({success: false, phone: "", message: "No completed activities are pending purchase info"}); 
