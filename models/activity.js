@@ -176,16 +176,9 @@ activitySchema.statics.noResponse = function(cb) {
         );
       }
       //Enter phone number of staff member in charge of manual assignment of requests
-      var staffPhone = '4089159524';
+      var staffPhone = '6172377135';
       var modifiedStaffPhone = countryCode + staffPhone;
-
-      Admin.findOne({'phone': staffPhone}, function(err, result) {
-        if(result === null) {
-          cb({ success: false, noResponseAct: '', phone: "", message: 'Incorrect/ nonexisting fields'});
-        } else {
-          cb({ success: true, noResponseAct: act, phone: modifiedStaffPhone, message: '' });
-        }
-      });
+      cb({ success: true, noResponseAct: act, phone: modifiedStaffPhone, message: '' });
     }
   });
 };
