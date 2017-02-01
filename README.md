@@ -64,7 +64,9 @@ We foresee that a modification that LBFE is most likely to want to make would be
 
 - ```timer_requests``` (how long to wait before looking for new Emergency Food Requests in CiviCRM)
 - ```timer_checkUnscheduled``` (how long to wait before resending unclaimed requests)
-- ```timer_checkScheduled``` (how long to wait before reminding a volunteer to complete their assignment or respond to a message)
+- ```timer_checkScheduled``` (how long to wait before reminding a volunteer to complete their assignment)
+- ```timer_checkPantry``` (how long to wait before asking a volunteer if they purchased the groceries again)
+- ```timer_checkReimburse``` (how long to wait before asking a volunteer if they would like to be reimbursed again)
 - ```timer_volunteers``` (how long to wait before checking for new volunteers to add to Mongo database)
 
 If you would like to change the amount of time to wait before executing any of these tasks, find the line in routes/index.js where the appropriate timer is instantiated and change the second
