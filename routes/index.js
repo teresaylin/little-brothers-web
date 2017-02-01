@@ -494,14 +494,12 @@ Input:
 Output:
 -no returns; just updates CiviCRM, replacing the old request (with status "available") with a new request (with status "completed" and more details) that has all other information the same
 */
-function updateCivi(elderName, volunteer, purchased, toReimburse, callback) {
-  crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id: 'Available', return:'id,details,custom_102'},
+function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse, callback) {
+  crmAPI.get('Activity', {activity_type_id:'Emergency Food Package', status_id: 'Available', id: activity_id, return:'id,details,custom_102'},
     function (result) {
       if (typeof result.values != 'undefined') {
-        for (var i in result.values) {
-          var val = result.values[i];
-          if (val.custom_102 === elderName) {
-            var newDetails = "";
+        val = result.values[0];
+        var newDetails = "";
             if (val.details !== undefined) {
               newDetails += val.details + "\n";
             }
@@ -515,14 +513,11 @@ function updateCivi(elderName, volunteer, purchased, toReimburse, callback) {
             } else {
               newDetails += "picked up groceries from the LBFE pantry.";
             }
-            crmAPI.call('Activity', 'create', {id: val.id, status_id:'Completed', details: newDetails}, 
+            crmAPI.call('Activity', 'create', {id: val.id, status_id:'Completed', details: newDetails},
               function(result) {
                 console.log('Completed activity has been updated in Civi')
               }
             );
-            break;
-          }
-        }
       } else {
         console.log("Activity not found.");
       }
@@ -536,7 +531,7 @@ function removeCompleted() {
     if (act.length !== 0) {
       for (var i in act) {
         var activity = act[i];
-        updateCivi(activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse);
+        updateCivi(activity.activityID, activity.elderName, activity.volunteer, activity.purchased, activity.toReimburse);
       }
     } else {
       console.log('No activities need to be removed');
