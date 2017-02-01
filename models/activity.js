@@ -222,7 +222,52 @@ activitySchema.statics.checkActivityCompletion = function(cb) {
         })
       }    
     }
-  }); 
+  });
+  Activity.find({'status': 'Completed', 'purchased': undefined}, function(err, act) {
+    if(act.length === 0) {
+      cb({success: false, phone: "", message: "No completed activities are pending purchase info"}); 
+    } else {
+      for(var i=0; i<act.length; i++) {
+        var current = act[i]; 
+        var id = current.activityID; 
+        var eldername = current.elderName;  
+        var volunteerName = current.volunteer; 
+        Volunteer.findOne({'name': volunteerName}, function(err, result) {
+          if(result === null) {
+            cb({success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
+          } else {
+            var volunteerPhone = result.phone; 
+            var modifiedVolunteerPhone = "+1" + volunteerPhone; //only include the "+" if sending with twilio
+            var note = 'You have recently completed the emergency food request of ' + eldername + '. Did you pick up the groceries from the LBFE pantry or purchase them from a grocery store? Please text \"PANTRY\" for pantry or \"PURCHASED\" for store.';
+            cb({success: true, phone: modifiedVolunteerPhone, message: note}); 
+          }
+        })
+      }    
+    }
+  });
+  Activity.find({'status': 'Completed', 'purchased': 'yes', 'toReimburse': undefined}, function(err, act) {
+    if(act.length === 0) {
+      cb({success: false, phone: "", message: "No completed activities are pending purchase info"}); 
+    } else {
+      for(var i=0; i<act.length; i++) {
+        var current = act[i]; 
+        var id = current.activityID; 
+        var eldername = current.elderName;  
+        var volunteerName = current.volunteer; 
+        Volunteer.findOne({'name': volunteerName}, function(err, result) {
+          if(result === null) {
+            cb({success: false, phone: "", message: 'Incorrect/ nonexisting fields'}); 
+          } else {
+            var volunteerPhone = result.phone; 
+            var modifiedVolunteerPhone = "+1" + volunteerPhone; //only include the "+" if sending with twilio
+            var note = 'You have recently completed the emergency food request of ' + eldername + ' by buying groceries. Would you like to be reimbursed for your purchase? Please text \"YES\" or \"NO\"';
+            cb({success: true, phone: modifiedVolunteerPhone, message: note}); 
+          }
+        })
+      }    
+    }
+  });
+  
 }; 
 
 

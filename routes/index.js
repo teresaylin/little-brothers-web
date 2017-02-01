@@ -291,6 +291,7 @@ router.post('/replyToSMS', function(req, res, next) {
             numbers.push(numberString[i]);
           }
         }
+
         sendText(message, numbers);
       });
     } else if (data.success && data.civi) {
@@ -401,7 +402,12 @@ function updateCivi(elderName, volunteer, purchased, toReimburse, callback) {
         for (var i in result.values) {
           var val = result.values[i];
           if (val.custom_102 === elderName) {
-            var newDetails = val.details + "\n" + volunteer + " completed this task; they "
+            var newDetails = "";
+            if (val.details !== undefined)
+            {
+              newDetails += val.details + "\n";
+            }
+            newDetails += volunteer + " completed this task; they "
             if (purchased === "yes") {
               newDetails += "purchased groceries themselves and would ";
               if (toReimburse === "no") {
