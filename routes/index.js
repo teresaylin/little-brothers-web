@@ -4,6 +4,7 @@ var router = express.Router();
 var secrets = require('dotenv').config();
 
 var User = require('../models/user');
+var Admin = require('../models/admin');
 var Volunteer = require('../models/volunteer');
 var Activity = require('../models/activity');
 
@@ -57,6 +58,7 @@ Output:
 
 /*TWILIO VERSION*/
 function sendText(text, phone) {
+  // if sending to multiple numbers
   if (phone.constructor === Array) {
     for (var i = 0; i < phone.length; i++) {
       sendText(text, phone[i]);
