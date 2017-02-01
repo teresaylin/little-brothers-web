@@ -497,9 +497,9 @@ Output:
 */
 function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse) {
   crmAPI.get('Activity', {id: activity_id, status_id: 'Available', return:'id,details,custom_102'},
-    console.log('updateCivi parameters');
-    console.log(activity_id + elderName + volunteer + purchased + toReimburse);
     function (result) {
+      console.log('updateCivi parameters');
+      console.log(activity_id + elderName + volunteer + purchased + toReimburse);
       console.log(result);
       if (typeof result.values != 'undefined') {
         console.log('result.values[0]: ' + result.values[0].id + result.values[0].details + result.values[0].custom_102);
@@ -535,7 +535,7 @@ function updateCivi(activity_id, elderName, volunteer, purchased, toReimburse) {
 /* "Remove" Completed activities: updates activity status in Civi to 'Completed' */
 function removeCompleted() {
   Activity.find({'status': 'Completed', 'toReimburse': {$exists: true}}, function(err, act) {
-    console.log('act: ' + act)
+    console.log('act: ' + act);
     if (act.length !== 0) {
       for (var i in act) {
         var activity = act[i];
