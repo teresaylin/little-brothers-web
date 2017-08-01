@@ -321,7 +321,7 @@ function newAdmins() {
 /* GET new emergency requests from Civi and sends text to volunteers */
 // custom_102 is the field for the name of the elder
 // Checks for new emergency requests every hour; if there are new requests, send text
-var timer_requests = setInterval(newRequests, 1000*60);
+var timer_requests = setInterval(newRequests, 1000*60*60);
 newRequests();
 
 function newRequests() {
@@ -358,7 +358,7 @@ function newRequests() {
 }; 
 
 /* Checks for unscheduled activities and lack of volunteer responses to requests*/
-var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60);
+var timer_checkUnscheduled = setInterval(checkUnscheduled, 1000*60*60);
 
 function checkUnscheduled() {
   Activity.noResponse(function(data) {
@@ -387,7 +387,7 @@ function checkUnscheduled() {
 }
 
 /* Checks for the completion of a scheduled activity assigned to a volunteer */
-var timer_checkScheduled = setInterval(checkScheduled, 1000*60); 
+var timer_checkScheduled = setInterval(checkScheduled, 1000*60*60); 
 
 function checkScheduled() {
   Activity.checkActivityCompletion(function(data) {
@@ -397,7 +397,7 @@ function checkScheduled() {
   }); 
 }
 
-var timer_checkPantry = setInterval(checkPantry, 1000*60); 
+var timer_checkPantry = setInterval(checkPantry, 1000*60*5); 
 
 function checkPantry() {
   Activity.checkPantry(function(data) {
@@ -407,7 +407,7 @@ function checkPantry() {
   }); 
 }
 
-var timer_checkReimburse = setInterval(checkReimburse, 1000*60); 
+var timer_checkReimburse = setInterval(checkReimburse, 1000*60*5); 
 
 function checkReimburse() {
   Activity.checkReimburse(function(data) {
