@@ -12,7 +12,7 @@ conduct local tests or modify code (see "Local Deployment Requirements").
 
 **If you modify code, make sure to push it to Heroku for changes to take effect!**
 
-####Local Deployment Requirements
+#### Local Deployment Requirements
 After pulling from Git, create a .env file in your project directory with the following information:
 ```
 LB_URL='http://example.com'
