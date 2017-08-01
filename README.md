@@ -1,12 +1,12 @@
 # Little-Brothers-Web
-##Web server for Little Brothers
+## Web server for Little Brothers
 
-####Introduction
+#### Introduction
 Little Brothers Friends of the Elderly is a non-profit organization that provides emergency and scheduled assistance to elders in the program. This web application automates the process of providing
 emergency assistance to elders by frequently checking the CiviCRM database for new requests and texting volunteers (via Plivo's SMS) to fulfill those requests. Based on volunteer responses,
 emergency requests are completed and updated within the database. 
 
-####Deployment Requirements
+#### Deployment Requirements
 We deployed our [web application](https://lbfe.herokuapp.com/) to Heroku and used the add-on MongoLabs to use for database testing. There is no need for additional deployment steps unless you need to
 conduct local tests or modify code (see "Local Deployment Requirements").
 
@@ -32,7 +32,7 @@ Ensure npm is installed in the little-brothers-web directory and MongoDB is inst
 navigate to the little-brothers-web directory and run ```mongod --dbpath data```. Open a new Command Prompt window, navigate to little-brothers-web, and run ```npm start```.
 **IMPORTANT: Even if running locally, the server will still send texts to all volunteers. When testing, it is best practice to comment out any calls to sendText().**
 
-####Common Errors and How to Handle Them
+#### Common Errors and How to Handle Them
 If an error occurs during ```npm install``` or ```npm start``` saying that there is an issue with node-gyp or bcrypt:
 Check if node and npm are up to date (can be done with ```node -v``` and ```npm -v``` respectively). If not up to date, update them.
 If the error still occurs:
@@ -59,7 +59,7 @@ In the future, it might be best to switch to a more reliable SMS service, such a
 On the Twilio website, navigate to the [Console's Numbers page](https://www.twilio.com/console/phone-numbers/incoming). Click on the LBFE phone number and scroll down to the "Messaging" section.
 In the field that says "A MESSAGE COMES IN", ensure that the URL is ```https://lbfe.herokuapp.com/replyToSMS```.
 
-####A Quick Note on Timers
+#### A Quick Note on Timers
 We foresee that a modification that LBFE is most likely to want to make would be changing the timing of text alerts/reminders. Here is a list of all the timers that our program uses:
 
 - ```timer_requests``` (how long to wait before looking for new Emergency Food Requests in CiviCRM)
@@ -73,7 +73,7 @@ If you would like to change the amount of time to wait before executing any of t
 parameter of setInterval. Note that setInterval takes the amount of time in **milliseconds**. We recommend inputting the time to wait as follows: ```1000*seconds*minutes*hours*days```. For example, 3
 minutes becomes ```1000*60*3```, 1 hour becomes ```1000*60*60```, and 1 day becomes ```1000*60*60*24```.
 
-####Helpful Resources
+#### Helpful Resources
 To query and update the CiviCRM database, refer to [CiviCRM API](https://wiki.civicrm.org/confluence/display/CRMDOC/API+Reference).
 
 To incorporate SMS outbound and inbound text messages in our web application, refer to [Plivo API](https://www.plivo.com/docs/api/).
