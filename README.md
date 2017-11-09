@@ -6,6 +6,8 @@ Little Brothers Friends of the Elderly is a non-profit organization that provide
 emergency assistance to elders by frequently checking the CiviCRM database for new requests and texting volunteers (via Plivo's SMS) to fulfill those requests. Based on volunteer responses,
 emergency requests are completed and updated within the database. 
 
+Access is limited to Boston Little Brothers admins. However, a demo of the application - and how it interfaces with the CiviCRM database and users - can be seen [here](https://www.youtube.com/watch?v=H4MbXbBYpg0).
+
 #### Deployment Requirements
 We deployed our [web application](https://lbfe.herokuapp.com/) to Heroku and used the add-on MongoLabs to use for database testing. There is no need for additional deployment steps unless you need to
 conduct local tests or modify code (see "Local Deployment Requirements").
